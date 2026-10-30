@@ -84,9 +84,6 @@ export const commonAnomalies: readonly Anomaly[] = [
   metaEdit("too-many-commits", "コミット多すぎ", (pr) => {
     pr.commits = 8888;
   }),
-  metaEdit("failing-check", "失敗しているテスト", (pr) => {
-    pr.checks = pr.checks.map((c) => (c.name === "test" ? { ...c, status: "failure" } : c));
-  }),
   metaEdit("self-approval", "自己承認", (pr) => {
     pr.timeline = [...pr.timeline, "codebot[bot] がこのプルリクエストを承認しました"];
   }),
