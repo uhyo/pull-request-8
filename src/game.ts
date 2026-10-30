@@ -1,7 +1,9 @@
 import { anomalies, findAnomaly } from "./anomalies";
 import { basePullRequest, clonePullRequest, type PullRequest } from "./pr";
 
-/** このプルリクエスト番号に到達したらマージできる */
+/** 最初のプルリクエスト番号。間違えるとここに戻る */
+export const START = 1;
+/** このプルリクエスト番号を正しく承認したらマージしてクリア */
 export const GOAL = 8;
 /** 各ラウンドで異変が起きる確率 */
 export const ANOMALY_RATE = 0.6;
@@ -21,6 +23,8 @@ export interface GameState {
   bag: string[];
   reviews: number;
   mistakes: number;
+  /** ゴールのプルリクエストを正しく承認した */
+  cleared: boolean;
 }
 
 function shuffle<T>(items: readonly T[], random: Random): T[] {
@@ -45,10 +49,11 @@ function drawRound(number: number, bag: string[], random: Random): { round: Roun
 export function newGame(random: Random): GameState {
   // 最初の 1 回は「いつもの」プルリクエストを覚えてもらうために必ず正常
   return {
-    round: { number: 0, anomalyId: null },
+    round: { number: START, anomalyId: null },
     bag: shuffle(anomalies.map((a) => a.id), random),
     reviews: 0,
     mistakes: 0,
+    cleared: false,
   };
 }
 
@@ -62,21 +67,14 @@ export function submitReview(
   random: Random,
 ): { state: GameState; correct: boolean } {
   const correct = isCorrect(state.round, verdict);
-  const nextNumber = correct ? state.round.number + 1 : 0;
+  const reviews = state.reviews + 1;
+  const mistakes = state.mistakes + (correct ? 0 : 1);
+  if (correct && state.round.number >= GOAL) {
+    return { correct, state: { ...state, reviews, mistakes, cleared: true } };
+  }
+  const nextNumber = correct ? state.round.number + 1 : START;
   const { round, bag } = drawRound(nextNumber, state.bag, random);
-  return {
-    correct,
-    state: {
-      round,
-      bag,
-      reviews: state.reviews + 1,
-      mistakes: state.mistakes + (correct ? 0 : 1),
-    },
-  };
-}
-
-export function isGoal(state: GameState): boolean {
-  return state.round.number >= GOAL;
+  return { correct, state: { round, bag, reviews, mistakes, cleared: false } };
 }
 
 export function pullRequestFor(round: Round): PullRequest {
