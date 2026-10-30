@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { clonePullRequest } from "../pr";
-import { levels, type ProblemSet } from ".";
+import { allAnomalies, anomaliesFor, levels, type ProblemSet } from ".";
 
 const playable = levels.flatMap((l) => (l.problems ? [[l.id, l.problems] as const] : []));
 
@@ -15,23 +15,36 @@ describe("levels", () => {
   });
 });
 
-describe.each(playable)("anomalies of %s", (_, problems: ProblemSet) => {
-  const base = problems.pullRequest;
+describe.each(playable)("problems of %s", (_, problems: ProblemSet) => {
+  it("have pull requests with unique ids and titles", () => {
+    const { baselines } = problems;
+    expect(baselines.length).toBeGreaterThan(0);
+    expect(new Set(baselines.map((b) => b.id)).size).toBe(baselines.length);
+    expect(new Set(baselines.map((b) => b.pullRequest.title)).size).toBe(baselines.length);
+  });
 
-  it("have unique ids and names", () => {
-    const { anomalies } = problems;
+  it("have anomalies with unique ids and names across the level", () => {
+    const anomalies = allAnomalies(problems);
     expect(new Set(anomalies.map((a) => a.id)).size).toBe(anomalies.length);
     expect(new Set(anomalies.map((a) => a.name)).size).toBe(anomalies.length);
   });
 
-  it.each(problems.anomalies.map((a) => [a.id, a] as const))("%s changes the pull request", (_, anomaly) => {
-    const changed = anomaly.apply(clonePullRequest(base));
-    expect(changed).not.toEqual(base);
-  });
+  describe.each(problems.baselines.map((b) => [b.id, b] as const))("%s", (baselineId, baseline) => {
+    const base = baseline.pullRequest;
 
-  it("do not mutate the base pull request", () => {
-    const snapshot = clonePullRequest(base);
-    for (const a of problems.anomalies) a.apply(base);
-    expect(base).toEqual(snapshot);
+    // どのプルリクエストにも起こる異変も含めて、すべて当てはまること
+    it.each(anomaliesFor(problems, baselineId).map((a) => [a.id, a] as const))(
+      "%s changes the pull request",
+      (_, anomaly) => {
+        const changed = anomaly.apply(clonePullRequest(base));
+        expect(changed).not.toEqual(base);
+      },
+    );
+
+    it("is not mutated by its anomalies", () => {
+      const snapshot = clonePullRequest(base);
+      for (const a of anomaliesFor(problems, baselineId)) a.apply(base);
+      expect(base).toEqual(snapshot);
+    });
   });
 });

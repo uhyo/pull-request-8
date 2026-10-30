@@ -1,4 +1,4 @@
-import type { ProblemSet } from "./levels";
+import { allAnomalies, anomaliesFor, findBaseline, type ProblemSet } from "./levels";
 import { clonePullRequest, type PullRequest } from "./pr";
 
 /** 最初のプルリクエスト番号。間違えるとここに戻る */
@@ -14,6 +14,8 @@ export type Random = () => number;
 export interface Round {
   /** 画面に表示するプルリクエスト番号（= 現在の進捗） */
   number: number;
+  /** 届いたプルリクエスト（`Baseline` の id） */
+  baselineId: string;
   anomalyId: string | null;
 }
 
@@ -21,8 +23,10 @@ export interface GameState {
   /** 選んだ難易度の問題 */
   problems: ProblemSet;
   round: Round;
-  /** まだ出ていない異変。空になったら補充する */
-  bag: string[];
+  /** まだ届いていないプルリクエスト */
+  baselineBag: string[];
+  /** まだ出ていない異変 */
+  anomalyBag: string[];
   reviews: number;
   mistakes: number;
   /** ゴールのプルリクエストを正しく承認した */
@@ -38,31 +42,85 @@ function shuffle<T>(items: readonly T[], random: Random): T[] {
   return result;
 }
 
-function shuffledIds(problems: ProblemSet, random: Random): string[] {
-  return shuffle(problems.anomalies.map((a) => a.id), random);
+/**
+ * 袋から `accept` を満たす最初の要素を取り出す。
+ * 見つからなければ、新しいひと揃い（`refill`）を袋の後ろに足してから探す。
+ */
+function takeFromBag(
+  bag: string[],
+  refill: () => string[],
+  accept: (item: string) => boolean,
+): { item: string | null; bag: string[] } {
+  for (const candidates of [bag, [...bag, ...refill()]]) {
+    const index = candidates.findIndex(accept);
+    if (index !== -1) {
+      return { item: candidates[index]!, bag: candidates.filter((_, i) => i !== index) };
+    }
+  }
+  return { item: null, bag };
+}
+
+/** すべてのプルリクエストが一巡するまで同じものは届かず、2 回続けて同じものも届かない */
+function drawBaseline(
+  problems: ProblemSet,
+  bag: string[],
+  previous: string | null,
+  random: Random,
+): { baselineId: string; bag: string[] } {
+  const ids = problems.baselines.map((b) => b.id);
+  const { item, bag: rest } = takeFromBag(
+    bag,
+    () => shuffle(ids, random),
+    (id) => id !== previous || ids.length === 1,
+  );
+  if (item === null) throw new Error("no pull requests to draw");
+  return { baselineId: item, bag: rest };
+}
+
+/** すべての異変が一巡するまで、なるべく同じ異変は出さない */
+function drawAnomaly(
+  problems: ProblemSet,
+  bag: string[],
+  baselineId: string,
+  random: Random,
+): { anomalyId: string | null; bag: string[] } {
+  const possible = new Set(anomaliesFor(problems, baselineId).map((a) => a.id));
+  const { item, bag: rest } = takeFromBag(
+    bag,
+    () => shuffle(allAnomalies(problems).map((a) => a.id), random),
+    (id) => possible.has(id),
+  );
+  return { anomalyId: item, bag: rest };
 }
 
 function drawRound(
-  problems: ProblemSet,
+  state: GameState,
   number: number,
-  bag: string[],
   random: Random,
-): { round: Round; bag: string[] } {
+): Pick<GameState, "round" | "baselineBag" | "anomalyBag"> {
+  const { problems } = state;
+  const { baselineId, bag: baselineBag } = drawBaseline(
+    problems,
+    state.baselineBag,
+    state.round.baselineId,
+    random,
+  );
   // ゴールのプルリクエストは常に正常
   if (number >= GOAL || random() >= ANOMALY_RATE) {
-    return { round: { number, anomalyId: null }, bag };
+    return { round: { number, baselineId, anomalyId: null }, baselineBag, anomalyBag: state.anomalyBag };
   }
-  const filled = bag.length > 0 ? bag : shuffledIds(problems, random);
-  const [anomalyId, ...rest] = filled;
-  return { round: { number, anomalyId: anomalyId ?? null }, bag: rest };
+  const { anomalyId, bag: anomalyBag } = drawAnomaly(problems, state.anomalyBag, baselineId, random);
+  return { round: { number, baselineId, anomalyId }, baselineBag, anomalyBag };
 }
 
 export function newGame(problems: ProblemSet, random: Random): GameState {
-  // 最初の 1 回は「いつもの」プルリクエストを覚えてもらうために必ず正常
+  const { baselineId, bag } = drawBaseline(problems, [], null, random);
+  // 最初の 1 回は「いつもの」書き方を覚えてもらうために必ず正常
   return {
     problems,
-    round: { number: START, anomalyId: null },
-    bag: shuffledIds(problems, random),
+    round: { number: START, baselineId, anomalyId: null },
+    baselineBag: bag,
+    anomalyBag: [],
     reviews: 0,
     mistakes: 0,
     cleared: false,
@@ -85,14 +143,14 @@ export function submitReview(
     return { correct, state: { ...state, reviews, mistakes, cleared: true } };
   }
   const nextNumber = correct ? state.round.number + 1 : START;
-  const { round, bag } = drawRound(state.problems, nextNumber, state.bag, random);
-  return { correct, state: { ...state, round, bag, reviews, mistakes, cleared: false } };
+  const drawn = drawRound(state, nextNumber, random);
+  return { correct, state: { ...state, ...drawn, reviews, mistakes, cleared: false } };
 }
 
 export function pullRequestFor(problems: ProblemSet, round: Round): PullRequest {
-  const base = clonePullRequest(problems.pullRequest);
+  const base = clonePullRequest(findBaseline(problems, round.baselineId).pullRequest);
   if (round.anomalyId === null) return base;
-  const anomaly = problems.anomalies.find((a) => a.id === round.anomalyId);
-  if (!anomaly) throw new Error(`unknown anomaly: ${round.anomalyId}`);
+  const anomaly = anomaliesFor(problems, round.baselineId).find((a) => a.id === round.anomalyId);
+  if (!anomaly) throw new Error(`anomaly ${round.anomalyId} cannot happen to ${round.baselineId}`);
   return anomaly.apply(base);
 }

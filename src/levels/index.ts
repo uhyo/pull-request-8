@@ -2,16 +2,25 @@ import type { Anomaly } from "../anomalies";
 import type { PullRequest } from "../pr";
 import { easy } from "./easy";
 
-/** 1 つの難易度で使う「いつもの」プルリクエストと、その異変 */
-export interface ProblemSet {
+/** 「いつもの」プルリクエストの 1 つと、それだけに起こる異変 */
+export interface Baseline {
+  id: string;
   /**
-   * 毎回提示される「いつもの」プルリクエスト。
-   * プレイヤーはこれを覚え、ここから外れたもの（異変）を見つける。
+   * 異変のない状態のプルリクエスト。
+   * プレイヤーは同じ AI の「いつもの」書き方を覚え、ここから外れたもの（異変）を見つける。
    */
   pullRequest: PullRequest;
   anomalies: readonly Anomaly[];
-  /** クリア画面に表示する、マージされた結果のひとこと */
+  /** このプルリクエストを #8 としてマージしたときに、クリア画面に表示するひとこと */
   mergedMessage: string;
+}
+
+/** 1 つの難易度で使うプルリクエストと異変 */
+export interface ProblemSet {
+  /** 毎回このうちどれかが届く */
+  baselines: readonly Baseline[];
+  /** どのプルリクエストにも起こりうる異変 */
+  commonAnomalies: readonly Anomaly[];
 }
 
 export type LevelId = "easy" | "normal" | "hard";
@@ -33,4 +42,20 @@ export const levels: readonly Level[] = [
 
 export function findLevel(id: string): Level | undefined {
   return levels.find((l) => l.id === id);
+}
+
+export function findBaseline(problems: ProblemSet, id: string): Baseline {
+  const baseline = problems.baselines.find((b) => b.id === id);
+  if (!baseline) throw new Error(`unknown baseline: ${id}`);
+  return baseline;
+}
+
+/** その難易度のすべての異変（図鑑に並ぶもの） */
+export function allAnomalies(problems: ProblemSet): Anomaly[] {
+  return [...problems.baselines.flatMap((b) => b.anomalies), ...problems.commonAnomalies];
+}
+
+/** `baselineId` のプルリクエストに起こりうる異変 */
+export function anomaliesFor(problems: ProblemSet, baselineId: string): Anomaly[] {
+  return [...findBaseline(problems, baselineId).anomalies, ...problems.commonAnomalies];
 }

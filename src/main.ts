@@ -7,7 +7,7 @@ import {
   type GameState,
   type Verdict,
 } from "./game";
-import { findLevel, levels, type Level, type ProblemSet } from "./levels";
+import { allAnomalies, findBaseline, findLevel, levels, type Level, type ProblemSet } from "./levels";
 import { escapeHtml, renderMarkdown } from "./markdown";
 import type { PullRequest } from "./pr";
 import { loadCleared, loadDiscovered, saveCleared, saveDiscovered } from "./storage";
@@ -45,21 +45,30 @@ function renderLevelButton(l: Level): string {
   return `
     <button class="level" type="button" data-level="${l.id}">
       ${head}
-      <span class="level-status">${cleared}<span>異変 ${found} / ${l.problems.anomalies.length}</span></span>
+      <span class="level-status">${cleared}<span>異変 ${found} / ${allAnomalies(l.problems).length}</span></span>
     </button>`;
 }
 
 function renderCollection(l: PlayableLevel): string {
   const found = loadDiscovered(l.id);
-  const items = l.problems.anomalies
-    .map((a) =>
-      found.has(a.id) ? `<li class="found">${escapeHtml(a.name)}</li>` : `<li class="unknown">？？？</li>`,
-    )
+  const groups = [
+    ...l.problems.baselines.map((b) => ({ heading: b.pullRequest.title, anomalies: b.anomalies })),
+    { heading: "どのプルリクエストにも", anomalies: l.problems.commonAnomalies },
+  ];
+  const sections = groups
+    .map(({ heading, anomalies }) => {
+      const items = anomalies
+        .map((a) =>
+          found.has(a.id) ? `<li class="found">${escapeHtml(a.name)}</li>` : `<li class="unknown">？？？</li>`,
+        )
+        .join("");
+      return `<h3>${escapeHtml(heading)}</h3><ul>${items}</ul>`;
+    })
     .join("");
   return `
     <details class="collection">
-      <summary>見つけた異変（${escapeHtml(l.name)}） ${found.size} / ${l.problems.anomalies.length}</summary>
-      <ul>${items}</ul>
+      <summary>見つけた異変（${escapeHtml(l.name)}） ${found.size} / ${allAnomalies(l.problems).length}</summary>
+      ${sections}
     </details>`;
 }
 
@@ -228,7 +237,8 @@ async function review(verdict: Verdict): Promise<void> {
 // ---------------------------------------------------------------- エンディング
 
 function renderEnding(): void {
-  const { anomalies, mergedMessage } = level.problems;
+  const anomalies = allAnomalies(level.problems);
+  const { mergedMessage } = findBaseline(level.problems, state.round.baselineId);
   const found = anomalies.filter((a) => foundThisRun.has(a.id));
   const list =
     found.length > 0

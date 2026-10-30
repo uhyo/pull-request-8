@@ -28,6 +28,19 @@ export function bodyEdit(id: string, name: string, from: string, to: string): An
   };
 }
 
+/** 説明文全体を書き換える異変 */
+export function bodyRewrite(id: string, name: string, rewrite: (body: string) => string): Anomaly {
+  return {
+    id,
+    name,
+    apply(pr) {
+      const next = clonePullRequest(pr);
+      next.body = rewrite(next.body);
+      return next;
+    },
+  };
+}
+
 export function metaEdit(
   id: string,
   name: string,
