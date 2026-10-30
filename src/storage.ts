@@ -1,8 +1,7 @@
 import type { LevelId } from "./levels";
 
-// かんたんは難易度選択を追加する前から遊べたので、そのころのキーをそのまま使って記録を引き継ぐ
 function storageKey(level: LevelId, name: "discovered" | "cleared"): string {
-  return level === "easy" ? `pr8:${name}` : `pr8:${level}:${name}`;
+  return `pr8:${level}:${name}`;
 }
 
 // ストレージが使えない環境（プライベートウィンドウなど）でもゲーム自体は遊べるようにする
