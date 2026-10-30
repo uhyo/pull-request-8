@@ -1,7 +1,9 @@
 import { anomalies, findAnomaly } from "./anomalies";
 import { basePullRequest, clonePullRequest, type PullRequest } from "./pr";
 
-/** このプルリクエスト番号に到達したらマージできる */
+/** 最初のプルリクエスト番号。間違えるとここに戻る */
+export const START = 1;
+/** このプルリクエスト番号を承認できたらマージできる */
 export const GOAL = 8;
 /** 各ラウンドで異変が起きる確率 */
 export const ANOMALY_RATE = 0.6;
@@ -19,6 +21,8 @@ export interface GameState {
   round: Round;
   /** まだ出ていない異変。空になったら補充する */
   bag: string[];
+  /** #GOAL を正しく承認し、マージを待っている */
+  approved: boolean;
   reviews: number;
   mistakes: number;
 }
@@ -33,8 +37,7 @@ function shuffle<T>(items: readonly T[], random: Random): T[] {
 }
 
 function drawRound(number: number, bag: string[], random: Random): { round: Round; bag: string[] } {
-  // ゴールのプルリクエストは常に正常
-  if (number >= GOAL || random() >= ANOMALY_RATE) {
+  if (random() >= ANOMALY_RATE) {
     return { round: { number, anomalyId: null }, bag };
   }
   const filled = bag.length > 0 ? bag : shuffle(anomalies.map((a) => a.id), random);
@@ -45,8 +48,9 @@ function drawRound(number: number, bag: string[], random: Random): { round: Roun
 export function newGame(random: Random): GameState {
   // 最初の 1 回は「いつもの」プルリクエストを覚えてもらうために必ず正常
   return {
-    round: { number: 0, anomalyId: null },
+    round: { number: START, anomalyId: null },
     bag: shuffle(anomalies.map((a) => a.id), random),
+    approved: false,
     reviews: 0,
     mistakes: 0,
   };
@@ -62,21 +66,23 @@ export function submitReview(
   random: Random,
 ): { state: GameState; correct: boolean } {
   const correct = isCorrect(state.round, verdict);
-  const nextNumber = correct ? state.round.number + 1 : 0;
+  const reviews = state.reviews + 1;
+  const mistakes = state.mistakes + (correct ? 0 : 1);
+  const atGoal = state.round.number >= GOAL;
+
+  // 異変のない #GOAL を承認できたら、同じプルリクエストをマージできる
+  if (correct && atGoal && verdict === "approve") {
+    return { correct, state: { ...state, approved: true, reviews, mistakes } };
+  }
+
+  // #GOAL に異変があった場合は、作り直された #GOAL をもう一度レビューする
+  const nextNumber = !correct ? START : atGoal ? GOAL : state.round.number + 1;
   const { round, bag } = drawRound(nextNumber, state.bag, random);
-  return {
-    correct,
-    state: {
-      round,
-      bag,
-      reviews: state.reviews + 1,
-      mistakes: state.mistakes + (correct ? 0 : 1),
-    },
-  };
+  return { correct, state: { round, bag, approved: false, reviews, mistakes } };
 }
 
-export function isGoal(state: GameState): boolean {
-  return state.round.number >= GOAL;
+export function isMergeable(state: GameState): boolean {
+  return state.approved;
 }
 
 export function pullRequestFor(round: Round): PullRequest {

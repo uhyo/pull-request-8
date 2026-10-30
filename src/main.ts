@@ -2,7 +2,7 @@ import "./style.css";
 import { anomalies } from "./anomalies";
 import {
   GOAL,
-  isGoal,
+  isMergeable,
   newGame,
   pullRequestFor,
   submitReview,
@@ -167,8 +167,10 @@ function renderPullRequest(pr: PullRequest, number: number, goal: boolean): stri
 
 function renderRound(): void {
   const { round } = state;
-  const goal = isGoal(state);
-  app.innerHTML = renderPullRequest(pullRequestFor(round), round.number, goal);
+  const mergeable = isMergeable(state);
+  const pr = pullRequestFor(round);
+  if (mergeable) pr.timeline.push("あなた がこのプルリクエストを承認しました");
+  app.innerHTML = renderPullRequest(pr, round.number, mergeable);
   window.scrollTo({ top: 0 });
 
   for (const tab of app.querySelectorAll("[data-locked]")) {
@@ -192,7 +194,7 @@ async function review(verdict: Verdict): Promise<void> {
   state = result.state;
   await transition(
     verdict === "approve" ? "承認しました" : "変更をリクエストしました",
-    "codebot[bot] が新しいプルリクエストを作成しています…",
+    isMergeable(state) ? "" : "codebot[bot] が新しいプルリクエストを作成しています…",
     renderRound,
   );
 }
