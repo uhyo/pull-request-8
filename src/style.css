@@ -260,6 +260,13 @@ code {
   padding: 4px 0;
 }
 
+.collection h3 {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+}
+
 .collection ul {
   list-style: none;
   padding: 0;
@@ -740,6 +747,26 @@ code {
 .label-enhancement {
   background: rgba(162, 238, 239, 0.25);
   border-color: #79d7d8;
+}
+
+.label-bug {
+  background: rgba(248, 81, 73, 0.15);
+  border-color: #f47067;
+}
+
+.label-dependencies {
+  background: rgba(56, 139, 253, 0.15);
+  border-color: #6cb6ff;
+}
+
+.label-refactor {
+  background: rgba(240, 183, 47, 0.2);
+  border-color: #e0a526;
+}
+
+.label-documentation {
+  background: rgba(63, 185, 80, 0.15);
+  border-color: #57ab5a;
 }
 
 .label-ai-generated {
