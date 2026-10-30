@@ -175,9 +175,70 @@ code {
   margin: 0 0 32px;
 }
 
+.level-heading {
+  font-size: 15px;
+  font-weight: 600;
+  color: #b8bec6;
+  margin: 0 0 12px;
+}
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.level {
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #e6e6e6;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.level:hover:not(:disabled) {
+  border-color: var(--sign);
+  background: rgba(242, 194, 0, 0.08);
+}
+
+.level:focus-visible {
+  outline: 2px solid var(--sign);
+  outline-offset: 2px;
+}
+
+.level:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.level-name {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.level-desc {
+  color: #b8bec6;
+  font-size: 13px;
+}
+
+.level-status {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 12px;
+  color: #8b949e;
+}
+
 .cleared-mark {
   color: #3fb950;
-  margin: 16px 0 0;
 }
 
 .collection {
@@ -187,6 +248,10 @@ code {
   border-radius: 8px;
   padding: 8px 16px;
   background: rgba(255, 255, 255, 0.03);
+}
+
+.collection + .collection {
+  margin-top: 12px;
 }
 
 .collection summary {
@@ -293,6 +358,16 @@ code {
 
 .repo {
   font-size: 15px;
+}
+
+.level-badge {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 .page {
@@ -546,6 +621,9 @@ code {
 }
 
 @media (max-width: 520px) {
+  .levels {
+    grid-template-columns: 1fr;
+  }
   .panel,
   .timeline {
     margin-left: 0;

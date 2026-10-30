@@ -1,5 +1,5 @@
-import { anomalies, findAnomaly } from "./anomalies";
-import { basePullRequest, clonePullRequest, type PullRequest } from "./pr";
+import type { ProblemSet } from "./levels";
+import { clonePullRequest, type PullRequest } from "./pr";
 
 /** 最初のプルリクエスト番号。間違えるとここに戻る */
 export const START = 1;
@@ -18,6 +18,8 @@ export interface Round {
 }
 
 export interface GameState {
+  /** 選んだ難易度の問題 */
+  problems: ProblemSet;
   round: Round;
   /** まだ出ていない異変。空になったら補充する */
   bag: string[];
@@ -36,21 +38,31 @@ function shuffle<T>(items: readonly T[], random: Random): T[] {
   return result;
 }
 
-function drawRound(number: number, bag: string[], random: Random): { round: Round; bag: string[] } {
+function shuffledIds(problems: ProblemSet, random: Random): string[] {
+  return shuffle(problems.anomalies.map((a) => a.id), random);
+}
+
+function drawRound(
+  problems: ProblemSet,
+  number: number,
+  bag: string[],
+  random: Random,
+): { round: Round; bag: string[] } {
   // ゴールのプルリクエストは常に正常
   if (number >= GOAL || random() >= ANOMALY_RATE) {
     return { round: { number, anomalyId: null }, bag };
   }
-  const filled = bag.length > 0 ? bag : shuffle(anomalies.map((a) => a.id), random);
+  const filled = bag.length > 0 ? bag : shuffledIds(problems, random);
   const [anomalyId, ...rest] = filled;
   return { round: { number, anomalyId: anomalyId ?? null }, bag: rest };
 }
 
-export function newGame(random: Random): GameState {
+export function newGame(problems: ProblemSet, random: Random): GameState {
   // 最初の 1 回は「いつもの」プルリクエストを覚えてもらうために必ず正常
   return {
+    problems,
     round: { number: START, anomalyId: null },
-    bag: shuffle(anomalies.map((a) => a.id), random),
+    bag: shuffledIds(problems, random),
     reviews: 0,
     mistakes: 0,
     cleared: false,
@@ -73,14 +85,14 @@ export function submitReview(
     return { correct, state: { ...state, reviews, mistakes, cleared: true } };
   }
   const nextNumber = correct ? state.round.number + 1 : START;
-  const { round, bag } = drawRound(nextNumber, state.bag, random);
-  return { correct, state: { round, bag, reviews, mistakes, cleared: false } };
+  const { round, bag } = drawRound(state.problems, nextNumber, state.bag, random);
+  return { correct, state: { ...state, round, bag, reviews, mistakes, cleared: false } };
 }
 
-export function pullRequestFor(round: Round): PullRequest {
-  const base = clonePullRequest(basePullRequest);
+export function pullRequestFor(problems: ProblemSet, round: Round): PullRequest {
+  const base = clonePullRequest(problems.pullRequest);
   if (round.anomalyId === null) return base;
-  const anomaly = findAnomaly(round.anomalyId);
+  const anomaly = problems.anomalies.find((a) => a.id === round.anomalyId);
   if (!anomaly) throw new Error(`unknown anomaly: ${round.anomalyId}`);
   return anomaly.apply(base);
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { anomalies } from "./anomalies";
 import { GOAL, START, isCorrect, newGame, submitReview, type GameState } from "./game";
+import { easy } from "./levels/easy";
 
 /** 異変を必ず起こす / 起こさない乱数 */
 const always = () => 0;
@@ -8,7 +8,7 @@ const never = () => 0.99;
 
 describe("game", () => {
   it("starts at #1 with a normal pull request", () => {
-    const state = newGame(always);
+    const state = newGame(easy, always);
     expect(START).toBe(1);
     expect(state.round).toEqual({ number: START, anomalyId: null });
   });
@@ -21,7 +21,7 @@ describe("game", () => {
   });
 
   it("advances on a correct review and resets on a mistake", () => {
-    let state = newGame(always);
+    let state = newGame(easy, always);
     state = submitReview(state, "approve", always).state;
     expect(state.round.number).toBe(START + 1);
     expect(state.round.anomalyId).not.toBeNull();
@@ -34,7 +34,7 @@ describe("game", () => {
   });
 
   it("reaches the goal with a normal pull request and clears by approving it", () => {
-    let state: GameState = newGame(always);
+    let state: GameState = newGame(easy, always);
     // 異変がない #1 を承認し、以降は異変を見抜き続ける
     state = submitReview(state, "approve", always).state;
     while (state.round.number < GOAL) {
@@ -50,7 +50,7 @@ describe("game", () => {
   });
 
   it("goes back to #1 when changes are requested on the goal", () => {
-    let state: GameState = newGame(never);
+    let state: GameState = newGame(easy, never);
     while (state.round.number < GOAL) state = submitReview(state, "approve", never).state;
     const result = submitReview(state, "request-changes", never);
     expect(result.correct).toBe(false);
@@ -59,14 +59,25 @@ describe("game", () => {
   });
 
   it("does not repeat an anomaly until all have appeared", () => {
-    let state = newGame(always);
+    let state = newGame(easy, always);
     state = submitReview(state, "approve", always).state;
     const seen: string[] = [];
-    for (let i = 0; i < anomalies.length; i++) {
+    for (let i = 0; i < easy.anomalies.length; i++) {
       seen.push(state.round.anomalyId!);
       // 間違えて #1 に戻り続ける
       state = submitReview(state, "approve", always).state;
     }
-    expect(new Set(seen).size).toBe(anomalies.length);
+    expect(new Set(seen).size).toBe(easy.anomalies.length);
+  });
+
+  it("draws anomalies only from the chosen problem set", () => {
+    const tiny = { ...easy, anomalies: easy.anomalies.slice(0, 2) };
+    let state = newGame(tiny, always);
+    state = submitReview(state, "approve", always).state;
+    const ids = new Set(tiny.anomalies.map((a) => a.id));
+    for (let i = 0; i < 6; i++) {
+      expect(ids.has(state.round.anomalyId!)).toBe(true);
+      state = submitReview(state, "approve", always).state;
+    }
   });
 });

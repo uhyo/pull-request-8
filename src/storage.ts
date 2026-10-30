@@ -1,11 +1,14 @@
-const DISCOVERED_KEY = "pr8:discovered";
-const CLEARED_KEY = "pr8:cleared";
+import type { LevelId } from "./levels";
+
+function storageKey(level: LevelId, name: "discovered" | "cleared"): string {
+  return `pr8:${level}:${name}`;
+}
 
 // ストレージが使えない環境（プライベートウィンドウなど）でもゲーム自体は遊べるようにする
 
-export function loadDiscovered(): Set<string> {
+export function loadDiscovered(level: LevelId): Set<string> {
   try {
-    const raw = localStorage.getItem(DISCOVERED_KEY);
+    const raw = localStorage.getItem(storageKey(level, "discovered"));
     const parsed: unknown = raw ? JSON.parse(raw) : [];
     return new Set(Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : []);
   } catch {
@@ -13,25 +16,25 @@ export function loadDiscovered(): Set<string> {
   }
 }
 
-export function saveDiscovered(ids: ReadonlySet<string>): void {
+export function saveDiscovered(level: LevelId, ids: ReadonlySet<string>): void {
   try {
-    localStorage.setItem(DISCOVERED_KEY, JSON.stringify([...ids]));
+    localStorage.setItem(storageKey(level, "discovered"), JSON.stringify([...ids]));
   } catch {
     // 保存できなくても続行する
   }
 }
 
-export function loadCleared(): boolean {
+export function loadCleared(level: LevelId): boolean {
   try {
-    return localStorage.getItem(CLEARED_KEY) === "1";
+    return localStorage.getItem(storageKey(level, "cleared")) === "1";
   } catch {
     return false;
   }
 }
 
-export function saveCleared(): void {
+export function saveCleared(level: LevelId): void {
   try {
-    localStorage.setItem(CLEARED_KEY, "1");
+    localStorage.setItem(storageKey(level, "cleared"), "1");
   } catch {
     // 保存できなくても続行する
   }

@@ -1,5 +1,4 @@
 import "./style.css";
-import { anomalies } from "./anomalies";
 import {
   GOAL,
   newGame,
@@ -8,15 +7,20 @@ import {
   type GameState,
   type Verdict,
 } from "./game";
+import { findLevel, levels, type Level, type ProblemSet } from "./levels";
 import { escapeHtml, renderMarkdown } from "./markdown";
 import type { PullRequest } from "./pr";
 import { loadCleared, loadDiscovered, saveCleared, saveDiscovered } from "./storage";
 
+type PlayableLevel = Level & { problems: ProblemSet };
+
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const random = Math.random;
 
-let state: GameState = newGame(random);
-let discovered = loadDiscovered();
+// 難易度を選んでゲームを始めたときに決まる
+let level!: PlayableLevel;
+let state!: GameState;
+let discovered = new Set<string>();
 /** 今回のプレイで見つけた異変 */
 let foundThisRun = new Set<string>();
 let busy = false;
@@ -27,40 +31,69 @@ const robotAvatar = `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="
 
 // ---------------------------------------------------------------- タイトル
 
-function renderTitle(): void {
-  const cleared = loadCleared();
-  const items = anomalies
+function isPlayable(l: Level): l is PlayableLevel {
+  return l.problems !== null;
+}
+
+function renderLevelButton(l: Level): string {
+  const head = `<span class="level-name">${escapeHtml(l.name)}</span><span class="level-desc">${escapeHtml(l.description)}</span>`;
+  if (!isPlayable(l)) {
+    return `<button class="level" type="button" disabled>${head}<span class="level-status">準備中</span></button>`;
+  }
+  const found = loadDiscovered(l.id).size;
+  const cleared = loadCleared(l.id) ? `<span class="cleared-mark">✓ #${GOAL} をマージ済み</span>` : "";
+  return `
+    <button class="level" type="button" data-level="${l.id}">
+      ${head}
+      <span class="level-status">${cleared}<span>異変 ${found} / ${l.problems.anomalies.length}</span></span>
+    </button>`;
+}
+
+function renderCollection(l: PlayableLevel): string {
+  const found = loadDiscovered(l.id);
+  const items = l.problems.anomalies
     .map((a) =>
-      discovered.has(a.id)
-        ? `<li class="found">${escapeHtml(a.name)}</li>`
-        : `<li class="unknown">？？？</li>`,
+      found.has(a.id) ? `<li class="found">${escapeHtml(a.name)}</li>` : `<li class="unknown">？？？</li>`,
     )
     .join("");
+  return `
+    <details class="collection">
+      <summary>見つけた異変（${escapeHtml(l.name)}） ${found.size} / ${l.problems.anomalies.length}</summary>
+      <ul>${items}</ul>
+    </details>`;
+}
 
+function startGame(next: PlayableLevel): void {
+  level = next;
+  state = newGame(level.problems, random);
+  discovered = loadDiscovered(level.id);
+  foundThisRun = new Set();
+  void transition(
+    "レビュー依頼が届きました",
+    "codebot[bot] があなたをレビュアーに指定しました",
+    renderRound,
+  );
+}
+
+function renderTitle(): void {
   app.innerHTML = `
     <div class="title-screen">
       <div class="title-inner">
         <p class="title-repo">acme / admin-console</p>
         <h1 class="game-title">プルリクエスト <span class="game-title-number">#8</span></h1>
         <p class="tagline">AI が書いたプルリクエストを、説明文だけでレビューしてください。</p>
-        <button class="btn primary big" id="start" type="button">レビューを始める</button>
-        ${cleared ? `<p class="cleared-mark">✓ #8 をマージ済み</p>` : ""}
-        <details class="collection">
-          <summary>見つけた異変 ${discovered.size} / ${anomalies.length}</summary>
-          <ul>${items}</ul>
-        </details>
+        <h2 class="level-heading">難易度を選んでレビューを始める</h2>
+        <div class="levels">${levels.map(renderLevelButton).join("")}</div>
+        ${levels.filter(isPlayable).map(renderCollection).join("")}
       </div>
     </div>`;
 
-  app.querySelector("#start")!.addEventListener("click", () => {
-    state = newGame(random);
-    foundThisRun = new Set();
-    void transition(
-      "レビュー依頼が届きました",
-      "codebot[bot] があなたをレビュアーに指定しました",
-      renderRound,
-    );
-  });
+  for (const button of app.querySelectorAll<HTMLButtonElement>("[data-level]")) {
+    button.addEventListener("click", () => {
+      const chosen = findLevel(button.dataset.level!);
+      if (chosen && isPlayable(chosen)) startGame(chosen);
+    });
+  }
 }
 
 // ---------------------------------------------------------- プルリクエスト
@@ -106,6 +139,7 @@ function renderPullRequest(pr: PullRequest, number: number): string {
     <header class="topbar">
       <span class="logo" aria-hidden="true">8</span>
       <span class="repo">acme / <b>admin-console</b></span>
+      <span class="level-badge">${escapeHtml(level.name)}</span>
     </header>
     <main class="page">
       <aside class="notice" role="note">
@@ -158,7 +192,7 @@ function renderPullRequest(pr: PullRequest, number: number): string {
 
 function renderRound(): void {
   const { round } = state;
-  app.innerHTML = renderPullRequest(pullRequestFor(round), round.number);
+  app.innerHTML = renderPullRequest(pullRequestFor(state.problems, round), round.number);
   window.scrollTo({ top: 0 });
 
   for (const tab of app.querySelectorAll("[data-locked]")) {
@@ -176,11 +210,11 @@ async function review(verdict: Verdict): Promise<void> {
   if (result.correct && anomalyId !== null) {
     foundThisRun.add(anomalyId);
     discovered.add(anomalyId);
-    saveDiscovered(discovered);
+    saveDiscovered(level.id, discovered);
   }
   state = result.state;
   if (state.cleared) {
-    saveCleared();
+    saveCleared(level.id);
     await transition("承認しました", "codebot[bot] がプルリクエストをマージしています…", renderEnding);
     return;
   }
@@ -194,6 +228,7 @@ async function review(verdict: Verdict): Promise<void> {
 // ---------------------------------------------------------------- エンディング
 
 function renderEnding(): void {
+  const { anomalies, mergedMessage } = level.problems;
   const found = anomalies.filter((a) => foundThisRun.has(a.id));
   const list =
     found.length > 0
@@ -205,8 +240,9 @@ function renderEnding(): void {
       <div class="title-inner">
         <p class="merged-badge">マージ済み</p>
         <h1 class="game-title">プルリクエスト <span class="game-title-number">#${GOAL}</span></h1>
-        <p class="tagline">ユーザー一覧画面にページネーションが追加されました。</p>
+        <p class="tagline">${escapeHtml(mergedMessage)}</p>
         <dl class="stats">
+          <div><dt>難易度</dt><dd>${escapeHtml(level.name)}</dd></div>
           <div><dt>レビュー回数</dt><dd>${state.reviews}</dd></div>
           <div><dt>判断ミス</dt><dd>${state.mistakes}</dd></div>
           <div><dt>見つけた異変（累計）</dt><dd>${discovered.size} / ${anomalies.length}</dd></div>
