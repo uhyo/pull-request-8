@@ -2,10 +2,10 @@ import "./style.css";
 import { anomalies } from "./anomalies";
 import {
   GOAL,
-  isMergeable,
   newGame,
   pullRequestFor,
   submitReview,
+  type Ending,
   type GameState,
   type Verdict,
 } from "./game";
@@ -45,7 +45,7 @@ function renderTitle(): void {
         <h1 class="game-title">プルリクエスト <span class="game-title-number">#8</span></h1>
         <p class="tagline">AI が書いたプルリクエストを、説明文だけでレビューしてください。</p>
         <button class="btn primary big" id="start" type="button">レビューを始める</button>
-        ${cleared ? `<p class="cleared-mark">✓ #8 をマージ済み</p>` : ""}
+        ${cleared ? `<p class="cleared-mark">✓ #8 までレビュー済み</p>` : ""}
         <details class="collection">
           <summary>見つけた異変 ${discovered.size} / ${anomalies.length}</summary>
           <ul>${items}</ul>
@@ -94,15 +94,21 @@ function renderReviewBox(): string {
     </section>`;
 }
 
-function renderMergeBox(): string {
-  return `
-    <section class="panel merge">
-      <p class="merge-status">✓ 承認済み — このプルリクエストはマージできます</p>
-      <button class="btn primary big" type="button" id="merge">プルリクエストをマージ</button>
+function renderFinishBox(ending: Ending): string {
+  return ending === "merge"
+    ? `
+    <section class="panel finish merge">
+      <p class="finish-status">✓ 承認済み — このプルリクエストはマージできます</p>
+      <button class="btn primary big" type="button" id="finish">プルリクエストをマージ</button>
+    </section>`
+    : `
+    <section class="panel finish close">
+      <p class="finish-status">✕ 変更をリクエスト済み — このプルリクエストはクローズできます</p>
+      <button class="btn danger big" type="button" id="finish">プルリクエストをクローズ</button>
     </section>`;
 }
 
-function renderPullRequest(pr: PullRequest, number: number, goal: boolean): string {
+function renderPullRequest(pr: PullRequest, number: number, ending: Ending | null): string {
   const notice = pr.notice.map((line) => `<li>${escapeHtml(line)}</li>`).join("");
   const labels = pr.labels
     .map((l) => `<span class="label label-${escapeHtml(l)}">${escapeHtml(l)}</span>`)
@@ -153,7 +159,7 @@ function renderPullRequest(pr: PullRequest, number: number, goal: boolean): stri
           </article>
           <ul class="timeline">${timeline}</ul>
           ${renderChecks(pr)}
-          ${goal ? renderMergeBox() : renderReviewBox()}
+          ${ending ? renderFinishBox(ending) : renderReviewBox()}
         </div>
 
         <aside class="sidebar">
@@ -166,11 +172,11 @@ function renderPullRequest(pr: PullRequest, number: number, goal: boolean): stri
 }
 
 function renderRound(): void {
-  const { round } = state;
-  const mergeable = isMergeable(state);
+  const { round, ending } = state;
   const pr = pullRequestFor(round);
-  if (mergeable) pr.timeline.push("あなた がこのプルリクエストを承認しました");
-  app.innerHTML = renderPullRequest(pr, round.number, mergeable);
+  if (ending === "merge") pr.timeline.push("あなた がこのプルリクエストを承認しました");
+  if (ending === "close") pr.timeline.push("あなた が変更をリクエストしました");
+  app.innerHTML = renderPullRequest(pr, round.number, ending);
   window.scrollTo({ top: 0 });
 
   for (const tab of app.querySelectorAll("[data-locked]")) {
@@ -179,7 +185,7 @@ function renderRound(): void {
   for (const button of app.querySelectorAll<HTMLButtonElement>("[data-verdict]")) {
     button.addEventListener("click", () => void review(button.dataset.verdict as Verdict));
   }
-  app.querySelector("#merge")?.addEventListener("click", () => void merge());
+  app.querySelector("#finish")?.addEventListener("click", () => void finish());
 }
 
 async function review(verdict: Verdict): Promise<void> {
@@ -194,15 +200,15 @@ async function review(verdict: Verdict): Promise<void> {
   state = result.state;
   await transition(
     verdict === "approve" ? "承認しました" : "変更をリクエストしました",
-    isMergeable(state) ? "" : "codebot[bot] が新しいプルリクエストを作成しています…",
+    state.ending ? "" : "codebot[bot] が新しいプルリクエストを作成しています…",
     renderRound,
   );
 }
 
-async function merge(): Promise<void> {
+async function finish(): Promise<void> {
   if (busy) return;
   saveCleared();
-  await transition("マージしています…", "", renderEnding);
+  await transition(state.ending === "close" ? "クローズしています…" : "マージしています…", "", renderEnding);
 }
 
 // ---------------------------------------------------------------- エンディング
@@ -217,9 +223,17 @@ function renderEnding(): void {
   app.innerHTML = `
     <div class="title-screen ending">
       <div class="title-inner">
-        <p class="merged-badge">マージ済み</p>
+        ${
+          state.ending === "close"
+            ? `<p class="ending-badge closed">クローズ済み</p>`
+            : `<p class="ending-badge merged">マージ済み</p>`
+        }
         <h1 class="game-title">プルリクエスト <span class="game-title-number">#${GOAL}</span></h1>
-        <p class="tagline">ユーザー一覧画面にページネーションが追加されました。</p>
+        <p class="tagline">${
+          state.ending === "close"
+            ? "異変のあるプルリクエストは、マージされずに閉じられました。"
+            : "ユーザー一覧画面にページネーションが追加されました。"
+        }</p>
         <dl class="stats">
           <div><dt>レビュー回数</dt><dd>${state.reviews}</dd></div>
           <div><dt>判断ミス</dt><dd>${state.mistakes}</dd></div>

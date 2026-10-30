@@ -3,12 +3,14 @@ import { basePullRequest, clonePullRequest, type PullRequest } from "./pr";
 
 /** 最初のプルリクエスト番号。間違えるとここに戻る */
 export const START = 1;
-/** このプルリクエスト番号を承認できたらマージできる */
+/** このプルリクエスト番号を正しくレビューできたらクリア */
 export const GOAL = 8;
 /** 各ラウンドで異変が起きる確率 */
 export const ANOMALY_RATE = 0.6;
 
 export type Verdict = "approve" | "request-changes";
+/** #GOAL のレビュー後の結末。承認したらマージ、変更をリクエストしたらクローズ */
+export type Ending = "merge" | "close";
 export type Random = () => number;
 
 export interface Round {
@@ -21,8 +23,8 @@ export interface GameState {
   round: Round;
   /** まだ出ていない異変。空になったら補充する */
   bag: string[];
-  /** #GOAL を正しく承認し、マージを待っている */
-  approved: boolean;
+  /** #GOAL を正しくレビューし終えたら、その結末 */
+  ending: Ending | null;
   reviews: number;
   mistakes: number;
 }
@@ -50,7 +52,7 @@ export function newGame(random: Random): GameState {
   return {
     round: { number: START, anomalyId: null },
     bag: shuffle(anomalies.map((a) => a.id), random),
-    approved: false,
+    ending: null,
     reviews: 0,
     mistakes: 0,
   };
@@ -68,21 +70,16 @@ export function submitReview(
   const correct = isCorrect(state.round, verdict);
   const reviews = state.reviews + 1;
   const mistakes = state.mistakes + (correct ? 0 : 1);
-  const atGoal = state.round.number >= GOAL;
 
-  // 異変のない #GOAL を承認できたら、同じプルリクエストをマージできる
-  if (correct && atGoal && verdict === "approve") {
-    return { correct, state: { ...state, approved: true, reviews, mistakes } };
+  // #GOAL を正しくレビューできたら、そのプルリクエストで終わり
+  if (correct && state.round.number >= GOAL) {
+    const ending: Ending = verdict === "approve" ? "merge" : "close";
+    return { correct, state: { ...state, ending, reviews, mistakes } };
   }
 
-  // #GOAL に異変があった場合は、作り直された #GOAL をもう一度レビューする
-  const nextNumber = !correct ? START : atGoal ? GOAL : state.round.number + 1;
+  const nextNumber = correct ? state.round.number + 1 : START;
   const { round, bag } = drawRound(nextNumber, state.bag, random);
-  return { correct, state: { round, bag, approved: false, reviews, mistakes } };
-}
-
-export function isMergeable(state: GameState): boolean {
-  return state.approved;
+  return { correct, state: { round, bag, ending: null, reviews, mistakes } };
 }
 
 export function pullRequestFor(round: Round): PullRequest {

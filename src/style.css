@@ -215,14 +215,21 @@ code {
 
 /* エンディング */
 
-.merged-badge {
+.ending-badge {
   display: inline-block;
-  background: #8250df;
   color: #fff;
   font-weight: 600;
   border-radius: 999px;
   padding: 2px 14px;
   margin: 0 0 16px;
+}
+
+.ending-badge.merged {
+  background: #8250df;
+}
+
+.ending-badge.closed {
+  background: #cf222e;
 }
 
 .stats {
@@ -625,15 +632,29 @@ code {
   margin-top: 12px;
 }
 
-.merge {
-  border-color: var(--green);
+.finish {
   text-align: center;
 }
 
-.merge-status {
-  color: var(--green);
+.finish-status {
   font-weight: 600;
   margin: 0 0 12px;
+}
+
+.merge {
+  border-color: var(--green);
+}
+
+.merge .finish-status {
+  color: var(--green);
+}
+
+.close {
+  border-color: var(--red);
+}
+
+.close .finish-status {
+  color: var(--red);
 }
 
 .sidebar {

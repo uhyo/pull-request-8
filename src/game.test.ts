@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { anomalies } from "./anomalies";
-import { GOAL, START, isCorrect, isMergeable, newGame, submitReview, type GameState } from "./game";
+import { GOAL, START, isCorrect, newGame, submitReview, type GameState } from "./game";
 
 /** 異変を必ず起こす / 起こさない乱数 */
 const always = () => 0;
@@ -40,34 +40,36 @@ describe("game", () => {
     return state;
   }
 
-  it("becomes mergeable after approving a normal #GOAL", () => {
+  it("ends with a merge after approving a normal #GOAL", () => {
     const state = reachGoal();
     expect(state.reviews).toBe(GOAL - START);
-    expect(isMergeable(state)).toBe(false);
+    expect(state.ending).toBeNull();
 
     const result = submitReview(state, "approve", never);
     expect(result.correct).toBe(true);
-    expect(isMergeable(result.state)).toBe(true);
+    expect(result.state.ending).toBe("merge");
     expect(result.state.round).toEqual(state.round);
   });
 
-  it("can put an anomaly in #GOAL", () => {
-    const state = submitReview(reachGoal(), "request-changes", always).state;
-    expect(state.round.number).toBe(START);
+  it("ends with a close after rejecting an anomalous #GOAL", () => {
+    const goal: GameState = { ...reachGoal(), round: { number: GOAL, anomalyId: "x" } };
 
-    let goal = reachGoal();
-    goal = { ...goal, round: { number: GOAL, anomalyId: "x" } };
-    const approved = submitReview(goal, "approve", always);
-    expect(approved.correct).toBe(false);
-    expect(isMergeable(approved.state)).toBe(false);
-    expect(approved.state.round.number).toBe(START);
-
-    // 正しく変更をリクエストすると、作り直された #GOAL がもう一度届く
     const rejected = submitReview(goal, "request-changes", always);
     expect(rejected.correct).toBe(true);
-    expect(isMergeable(rejected.state)).toBe(false);
-    expect(rejected.state.round.number).toBe(GOAL);
-    expect(rejected.state.round.anomalyId).not.toBeNull();
+    expect(rejected.state.ending).toBe("close");
+    expect(rejected.state.round).toEqual(goal.round);
+
+    const approved = submitReview(goal, "approve", always);
+    expect(approved.correct).toBe(false);
+    expect(approved.state.ending).toBeNull();
+    expect(approved.state.round.number).toBe(START);
+  });
+
+  it("resets when a normal #GOAL is rejected", () => {
+    const result = submitReview(reachGoal(), "request-changes", never);
+    expect(result.correct).toBe(false);
+    expect(result.state.ending).toBeNull();
+    expect(result.state.round.number).toBe(START);
   });
 
   it("does not repeat an anomaly until all have appeared", () => {
