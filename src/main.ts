@@ -2,7 +2,6 @@ import "./style.css";
 import { anomalies } from "./anomalies";
 import {
   GOAL,
-  isGoal,
   newGame,
   pullRequestFor,
   submitReview,
@@ -94,15 +93,7 @@ function renderReviewBox(): string {
     </section>`;
 }
 
-function renderMergeBox(): string {
-  return `
-    <section class="panel merge">
-      <p class="merge-status">✓ 承認済み — このプルリクエストはマージできます</p>
-      <button class="btn primary big" type="button" id="merge">プルリクエストをマージ</button>
-    </section>`;
-}
-
-function renderPullRequest(pr: PullRequest, number: number, goal: boolean): string {
+function renderPullRequest(pr: PullRequest, number: number): string {
   const notice = pr.notice.map((line) => `<li>${escapeHtml(line)}</li>`).join("");
   const labels = pr.labels
     .map((l) => `<span class="label label-${escapeHtml(l)}">${escapeHtml(l)}</span>`)
@@ -153,7 +144,7 @@ function renderPullRequest(pr: PullRequest, number: number, goal: boolean): stri
           </article>
           <ul class="timeline">${timeline}</ul>
           ${renderChecks(pr)}
-          ${goal ? renderMergeBox() : renderReviewBox()}
+          ${renderReviewBox()}
         </div>
 
         <aside class="sidebar">
@@ -167,8 +158,7 @@ function renderPullRequest(pr: PullRequest, number: number, goal: boolean): stri
 
 function renderRound(): void {
   const { round } = state;
-  const goal = isGoal(state);
-  app.innerHTML = renderPullRequest(pullRequestFor(round), round.number, goal);
+  app.innerHTML = renderPullRequest(pullRequestFor(round), round.number);
   window.scrollTo({ top: 0 });
 
   for (const tab of app.querySelectorAll("[data-locked]")) {
@@ -177,7 +167,6 @@ function renderRound(): void {
   for (const button of app.querySelectorAll<HTMLButtonElement>("[data-verdict]")) {
     button.addEventListener("click", () => void review(button.dataset.verdict as Verdict));
   }
-  app.querySelector("#merge")?.addEventListener("click", () => void merge());
 }
 
 async function review(verdict: Verdict): Promise<void> {
@@ -190,17 +179,16 @@ async function review(verdict: Verdict): Promise<void> {
     saveDiscovered(discovered);
   }
   state = result.state;
+  if (state.cleared) {
+    saveCleared();
+    await transition("承認しました", "codebot[bot] がプルリクエストをマージしています…", renderEnding);
+    return;
+  }
   await transition(
     verdict === "approve" ? "承認しました" : "変更をリクエストしました",
     "codebot[bot] が新しいプルリクエストを作成しています…",
     renderRound,
   );
-}
-
-async function merge(): Promise<void> {
-  if (busy) return;
-  saveCleared();
-  await transition("マージしています…", "", renderEnding);
 }
 
 // ---------------------------------------------------------------- エンディング

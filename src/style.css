@@ -625,17 +625,6 @@ code {
   margin-top: 12px;
 }
 
-.merge {
-  border-color: var(--green);
-  text-align: center;
-}
-
-.merge-status {
-  color: var(--green);
-  font-weight: 600;
-  margin: 0 0 12px;
-}
-
 .sidebar {
   font-size: 13px;
 }
