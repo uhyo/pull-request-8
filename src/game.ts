@@ -163,3 +163,45 @@ export function pullRequestFor(problems: ProblemSet, round: Round): PullRequest 
   if (!anomaly) throw new Error(`anomaly ${round.anomalyId} cannot happen to ${round.baselineId}`);
   return anomaly.apply(base);
 }
+
+/** ゲームの進行のうち、保存しておくもの（問題は難易度から引き直す） */
+export type SavedGame = Omit<GameState, "problems">;
+
+export function saveGame({ problems: _, ...saved }: GameState): SavedGame {
+  return saved;
+}
+
+const isCount = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
+
+function restoreRound(problems: ProblemSet, value: unknown): Round | null {
+  if (typeof value !== "object" || value === null) return null;
+  const { number, baselineId, anomalyId } = value as Record<string, unknown>;
+  if (!Number.isInteger(number) || (number as number) < START || (number as number) > GOAL) return null;
+  if (!problems.baselines.some((b) => b.id === baselineId)) return null;
+  const id = baselineId as string;
+  if (anomalyId !== null && !anomaliesFor(problems, id).some((a) => a.id === anomalyId)) return null;
+  return { number: number as number, baselineId: id, anomalyId: anomalyId as string | null };
+}
+
+/** 袋からなくなったものを取り除く（足りなければ引くときに補充される） */
+function restoreBag(value: unknown, known: readonly string[]): string[] | null {
+  if (!Array.isArray(value)) return null;
+  return value.filter((id): id is string => known.includes(id));
+}
+
+/**
+ * 保存しておいた進行を元に戻す。
+ * 問題が変わって元に戻せない（あるいは壊れている）ときは null
+ */
+export function restoreGame(problems: ProblemSet, saved: unknown): GameState | null {
+  if (typeof saved !== "object" || saved === null) return null;
+  const value = saved as Record<string, unknown>;
+  const round = restoreRound(problems, value.round);
+  const missed = value.missed === null ? null : restoreRound(problems, value.missed);
+  const baselineBag = restoreBag(value.baselineBag, problems.baselines.map((b) => b.id));
+  const anomalyBag = restoreBag(value.anomalyBag, allAnomalies(problems).map((a) => a.id));
+  const { reviews, mistakes, cleared } = value;
+  if (!round || (value.missed !== null && !missed) || !baselineBag || !anomalyBag) return null;
+  if (!isCount(reviews) || !isCount(mistakes) || typeof cleared !== "boolean") return null;
+  return { problems, round, baselineBag, anomalyBag, reviews, mistakes, cleared, missed };
+}

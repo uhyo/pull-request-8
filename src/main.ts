@@ -10,13 +10,28 @@ import {
   type Round,
   type Verdict,
 } from "./game";
-import { allAnomalies, findBaseline, findLevel, levels, type Level, type ProblemSet } from "./levels";
+import {
+  allAnomalies,
+  findBaseline,
+  findLevel,
+  isPlayable,
+  levels,
+  type Level,
+  type PlayableLevel,
+  type ProblemSet,
+} from "./levels";
 import { escapeHtml, renderMarkdown } from "./markdown";
 import type { PullRequest } from "./pr";
 import { clearShareText, xShareUrl } from "./share";
-import { loadCleared, loadDiscovered, saveCleared, saveDiscovered } from "./storage";
-
-type PlayableLevel = Level & { problems: ProblemSet };
+import {
+  clearProgress,
+  loadCleared,
+  loadDiscovered,
+  loadProgress,
+  saveCleared,
+  saveDiscovered,
+  saveProgress,
+} from "./storage";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const random = Math.random;
@@ -41,10 +56,6 @@ const xLogo = `<svg viewBox="0 0 24 24" role="img" aria-label="X"><path fill="cu
 const robotAvatar = `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="11" width="28" height="22" rx="6" fill="currentColor"/><rect x="18.5" y="4" width="3" height="7" fill="currentColor"/><circle cx="20" cy="4" r="2.5" fill="currentColor"/><circle cx="14.5" cy="21" r="3" fill="var(--avatar-eye)"/><circle cx="25.5" cy="21" r="3" fill="var(--avatar-eye)"/><rect x="14" y="27" width="12" height="2" rx="1" fill="var(--avatar-eye)"/></svg>`;
 
 // ---------------------------------------------------------------- タイトル
-
-function isPlayable(l: Level): l is PlayableLevel {
-  return l.problems !== null;
-}
 
 /** 見つけた異変のうち、今もその難易度にあるものの数（なくなった異変は数えない） */
 function countFound(problems: ProblemSet, found: ReadonlySet<string>): number {
@@ -99,6 +110,7 @@ function startGame(next: PlayableLevel): void {
   state = newGame(level.problems, random);
   discovered = loadDiscovered(level.id);
   foundThisRun = new Set();
+  saveProgress({ level, state, foundThisRun });
   void transition(
     "レビュー依頼が届きました",
     "codebot[bot] があなたをレビュアーに指定しました",
@@ -297,6 +309,8 @@ async function review(verdict: Verdict): Promise<void> {
     saveDiscovered(level.id, discovered);
   }
   state = result.state;
+  // 演出の途中で再読み込みされても、判断した結果から続ける
+  saveProgress({ level, state, foundThisRun });
   if (state.cleared) {
     saveCleared(level.id);
     await transition("承認しました", "codebot[bot] がプルリクエストをマージしています…", renderEnding);
@@ -348,7 +362,10 @@ function renderEnding(): void {
         </div>
       </div>
     </div>`;
-  app.querySelector("#back")!.addEventListener("click", renderTitle);
+  app.querySelector("#back")!.addEventListener("click", () => {
+    clearProgress();
+    renderTitle();
+  });
 }
 
 // ---------------------------------------------------------------- 演出
@@ -386,4 +403,15 @@ function toast(message: string): void {
   toastTimer = setTimeout(() => toastEl.classList.remove("visible"), 2200);
 }
 
-renderTitle();
+/** 再読み込みされる前のプレイがあれば、その続きの画面を出す */
+function resume(): boolean {
+  const progress = loadProgress();
+  if (!progress) return false;
+  ({ level, state, foundThisRun } = progress);
+  discovered = loadDiscovered(level.id);
+  if (state.cleared) renderEnding();
+  else renderRound();
+  return true;
+}
+
+if (!resume()) renderTitle();
