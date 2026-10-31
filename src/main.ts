@@ -35,22 +35,33 @@ function isPlayable(l: Level): l is PlayableLevel {
   return l.problems !== null;
 }
 
+/** 見つけた異変のうち、今もその難易度にあるものの数（なくなった異変は数えない） */
+function countFound(problems: ProblemSet, found: ReadonlySet<string>): number {
+  return allAnomalies(problems).filter((a) => found.has(a.id)).length;
+}
+
 function renderLevelButton(l: Level): string {
   const head = `<span class="level-name">${escapeHtml(l.name)}</span><span class="level-desc">${escapeHtml(l.description)}</span>`;
   if (!isPlayable(l)) {
     return `<button class="level" type="button" disabled>${head}<span class="level-status">準備中</span></button>`;
   }
-  const found = loadDiscovered(l.id).size;
+  // 異変をまだ 1 つも見つけていないうちは、数を見せずに第一印象をシンプルにする
+  const found = countFound(l.problems, loadDiscovered(l.id));
   const cleared = loadCleared(l.id) ? `<span class="cleared-mark">✓ #${GOAL} をマージ済み</span>` : "";
+  const count = found > 0 ? `<span>異変 ${found} / ${allAnomalies(l.problems).length}</span>` : "";
+  const status = cleared || count ? `<span class="level-status">${cleared}${count}</span>` : "";
   return `
     <button class="level" type="button" data-level="${l.id}">
       ${head}
-      <span class="level-status">${cleared}<span>異変 ${found} / ${allAnomalies(l.problems).length}</span></span>
+      ${status}
     </button>`;
 }
 
 function renderCollection(l: PlayableLevel): string {
   const found = loadDiscovered(l.id);
+  const foundCount = countFound(l.problems, found);
+  // 図鑑は異変を 1 つ見つけてから表示する
+  if (foundCount === 0) return "";
   const groups = [
     ...l.problems.baselines.map((b) => ({ heading: b.pullRequest.title, anomalies: b.anomalies })),
     { heading: "どのプルリクエストにも", anomalies: l.problems.commonAnomalies },
@@ -67,7 +78,7 @@ function renderCollection(l: PlayableLevel): string {
     .join("");
   return `
     <details class="collection">
-      <summary>見つけた異変（${escapeHtml(l.name)}） ${found.size} / ${allAnomalies(l.problems).length}</summary>
+      <summary>見つけた異変（${escapeHtml(l.name)}） ${foundCount} / ${allAnomalies(l.problems).length}</summary>
       ${sections}
     </details>`;
 }
@@ -127,7 +138,6 @@ function renderReviewBox(): string {
   return `
     <section class="panel review">
       <h2>レビューを送信</h2>
-      <textarea id="review-comment" rows="3" placeholder="コメント（任意）"></textarea>
       <div class="actions">
         <button class="btn danger" type="button" data-verdict="request-changes">変更をリクエスト</button>
         <button class="btn primary" type="button" data-verdict="approve">承認</button>
@@ -240,6 +250,7 @@ function renderEnding(): void {
   const anomalies = allAnomalies(level.problems);
   const { mergedMessage } = findBaseline(level.problems, state.round.baselineId);
   const found = anomalies.filter((a) => foundThisRun.has(a.id));
+  const totalFound = countFound(level.problems, discovered);
   const list =
     found.length > 0
       ? `<ul class="found-list">${found.map((a) => `<li>${escapeHtml(a.name)}</li>`).join("")}</ul>`
@@ -255,7 +266,7 @@ function renderEnding(): void {
           <div><dt>難易度</dt><dd>${escapeHtml(level.name)}</dd></div>
           <div><dt>レビュー回数</dt><dd>${state.reviews}</dd></div>
           <div><dt>判断ミス</dt><dd>${state.mistakes}</dd></div>
-          <div><dt>見つけた異変（累計）</dt><dd>${discovered.size} / ${anomalies.length}</dd></div>
+          ${totalFound > 0 ? `<div><dt>見つけた異変（累計）</dt><dd>${totalFound} / ${anomalies.length}</dd></div>` : ""}
         </dl>
         <h2 class="found-heading">今回見つけた異変</h2>
         ${list}

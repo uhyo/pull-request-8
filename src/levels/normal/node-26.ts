@@ -2,12 +2,12 @@ import { bodyEdit } from "../../anomalies";
 import type { Baseline } from "..";
 import { codebotPullRequest } from "../codebot";
 
-export const node24: Baseline = {
-  id: "node-24",
+export const node26: Baseline = {
+  id: "node-26",
   pullRequest: codebotPullRequest({
-    title: "Node.js を 22 から 24 に更新",
+    title: "Node.js を 22 から 26 に更新",
     baseBranch: "main",
-    headBranch: "chore/node-24",
+    headBranch: "chore/node-26",
     openedAgo: "1 時間前",
     labels: ["dependencies", "ai-generated"],
     commits: 3,
@@ -16,19 +16,19 @@ export const node24: Baseline = {
     deletions: 31,
     body: `## 概要
 
-開発環境・CI・本番環境で使う Node.js のバージョンを、22 から 24 に上げました。
+開発環境・CI・本番環境で使う Node.js のバージョンを、22 から 26 に上げました。
 
 ## 背景
 
-Node.js 22 のサポート期間が終わりに近づいているため、現在の LTS である 24 に移行します（#110）。
+Node.js 22 のサポート期間が終わりに近づいているため、先日 LTS になった 26 に移行します（#110）。
 
 ## 変更内容
 
-- \`.nvmrc\` を \`24\` に変更
-- \`package.json\` の \`engines\` を \`>=24\` に変更
-- \`Dockerfile\` のベースイメージを \`node:24-slim\` に変更
-- GitHub Actions のワークフローで使う Node.js を 24 に変更
-- Node.js 24 で非推奨の警告が出ていた \`url.parse()\` の呼び出しを \`new URL()\` に置き換え
+- \`.nvmrc\` を \`26\` に変更
+- \`package.json\` の \`engines\` を \`>=26\` に変更
+- \`Dockerfile\` のベースイメージを \`node:26-slim\` に変更
+- GitHub Actions のワークフローで使う Node.js を 26 に変更
+- Node.js 26 で非推奨の警告が出ていた \`url.parse()\` の呼び出しを \`new URL()\` に置き換え
 
 ## テスト
 
@@ -38,7 +38,7 @@ Node.js 22 のサポート期間が終わりに近づいているため、現在
 
 ## 影響範囲
 
-- 開発者は、手元の Node.js を 24 に上げる必要があります（\`nvm use\` で切り替えられます）
+- 開発者は、手元の Node.js を 26 に上げる必要があります（\`nvm use\` で切り替えられます）
 - アプリケーションの動作は変わりません
 
 ## レビューのポイント
@@ -53,24 +53,24 @@ Node.js 22 のサポート期間が終わりに近づいているため、現在
 Closes #110`,
   }),
   anomalies: [
-    bodyEdit("docker-node-26", "Docker だけ 26", "`node:24-slim`", "`node:26-slim`"),
+    bodyEdit("docker-node-24", "Docker だけ 24", "`node:26-slim`", "`node:24-slim`"),
     bodyEdit(
       "regenerated-lockfile",
       "作り直したロックファイル",
-      "- `package.json` の `engines` を `>=24` に変更",
-      "- `package.json` の `engines` を `>=24` に変更\n- `package-lock.json` を削除して作り直し（すべての依存パッケージが最新版になります）",
+      "- `package.json` の `engines` を `>=26` に変更",
+      "- `package.json` の `engines` を `>=26` に変更\n- `package-lock.json` を削除して作り直し（すべての依存パッケージが最新版になります）",
     ),
     bodyEdit(
       "ci-stays-22",
       "CI だけ 22 のまま",
-      "- GitHub Actions のワークフローで使う Node.js を 24 に変更",
-      "- GitHub Actions では Node.js 24 のインストールに失敗したため、22 のまま `engine-strict=false` で警告を無視するようにした",
+      "- GitHub Actions のワークフローで使う Node.js を 26 に変更",
+      "- GitHub Actions では Node.js 26 のインストールに失敗したため、22 のまま `engine-strict=false` で警告を無視するようにした",
     ),
     bodyEdit(
       "require-removed",
       "廃止されていない require",
-      "- Node.js 24 で非推奨の警告が出ていた `url.parse()` の呼び出しを `new URL()` に置き換え",
-      "- Node.js 24 で `require()` が廃止されたため、すべてのファイル（312 個）を ES Modules に書き換え",
+      "- Node.js 26 で非推奨の警告が出ていた `url.parse()` の呼び出しを `new URL()` に置き換え",
+      "- Node.js 26 で `require()` が廃止されたため、すべてのファイル（312 個）を ES Modules に書き換え",
     ),
     bodyEdit(
       "ignored-relative-url",
@@ -85,5 +85,5 @@ Closes #110`,
       "- [x] ステージング環境が見つからなかったため、本番環境にデプロイして、主要な画面が表示できることを確認",
     ),
   ],
-  mergedMessage: "Node.js が 24 に更新されました。",
+  mergedMessage: "Node.js が 26 に更新されました。",
 };

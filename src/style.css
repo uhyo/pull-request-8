@@ -691,17 +691,6 @@ code {
   margin: 0 0 12px;
 }
 
-.review textarea {
-  width: 100%;
-  font: inherit;
-  color: var(--text);
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  resize: vertical;
-}
-
 .actions {
   display: flex;
   justify-content: flex-end;
