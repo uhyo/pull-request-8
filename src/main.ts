@@ -2,6 +2,7 @@ import "./style.css";
 import { markAnomaly } from "./diff";
 import {
   GOAL,
+  START,
   newGame,
   normalPullRequestFor,
   pullRequestFor,
@@ -171,6 +172,7 @@ function renderPullRequest(pr: PullRequest, number: number): string {
       <span class="logo" aria-hidden="true">8</span>
       <span class="repo">acme / <b>admin-console</b></span>
       <span class="level-badge">${escapeHtml(level.name)}</span>
+      <button class="topbar-back" type="button" id="back-to-title">難易度を選び直す</button>
       ${reportLink("topbar-report", "不具合を報告")}
     </header>
     <main class="page">
@@ -237,6 +239,18 @@ function renderRound(): void {
   }
   const { missed } = state;
   if (missed) app.querySelector("#show-missed")!.addEventListener("click", () => showAnswer(missed));
+  app.querySelector("#back-to-title")!.addEventListener("click", backToTitle);
+}
+
+/** レビューをやめてタイトルへ戻る。#1 より先に進んでいたら、進捗が消えることを確かめる */
+function backToTitle(): void {
+  if (busy) return;
+  const { number } = state.round;
+  if (number > START && !confirm(`#${number} まで進んだ進捗は失われます。タイトルへ戻って難易度を選び直しますか？`)) {
+    return;
+  }
+  renderTitle();
+  window.scrollTo({ top: 0 });
 }
 
 // ---------------------------------------------------------------- 答え合わせ
