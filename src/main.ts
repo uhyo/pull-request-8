@@ -218,6 +218,7 @@ function renderPullRequest(pr: PullRequest, number: number): string {
             <div class="avatar">${robotAvatar}</div>
             <div class="comment-box">
               <div class="comment-header">
+                <span class="avatar avatar-inline">${robotAvatar}</span>
                 <b>${escapeHtml(pr.author)}</b> <span class="bot-badge">bot</span>
                 <span class="muted">がコメント · ${escapeHtml(pr.openedAgo)}</span>
               </div>
