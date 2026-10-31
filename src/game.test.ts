@@ -4,6 +4,7 @@ import {
   START,
   isCorrect,
   newGame,
+  normalPullRequestFor,
   pullRequestFor,
   submitReview,
   type GameState,
@@ -69,6 +70,28 @@ describe("game", () => {
     expect(result.state.round.number).toBe(START);
     expect(result.state.mistakes).toBe(1);
     expect(result.state.reviews).toBe(2);
+  });
+
+  it("remembers the round judged wrong until the next review", () => {
+    let state = newGame(easy, always);
+    expect(state.missed).toBeNull();
+    state = submitReview(state, "approve", always).state;
+    expect(state.missed).toBeNull();
+
+    const missedRound = state.round;
+    state = submitReview(state, "approve", always).state;
+    expect(state.missed).toEqual(missedRound);
+    expect(normalPullRequestFor(easy, missedRound)).not.toEqual(pullRequestFor(easy, missedRound));
+
+    // 次のラウンドを正しく判断したら忘れる
+    state = submitReview(state, "request-changes", always).state;
+    expect(state.missed).toBeNull();
+  });
+
+  it("remembers a normal round where changes were requested", () => {
+    const start = newGame(easy, never);
+    const { state } = submitReview(start, "request-changes", never);
+    expect(state.missed).toEqual(start.round);
   });
 
   it("reaches the goal with a normal pull request and clears by approving it", () => {

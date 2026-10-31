@@ -31,6 +31,8 @@ export interface GameState {
   mistakes: number;
   /** ゴールのプルリクエストを正しく承認した */
   cleared: boolean;
+  /** 直前に判断を間違えたラウンド。答え合わせに使う（見つけた異変には数えない） */
+  missed: Round | null;
 }
 
 function shuffle<T>(items: readonly T[], random: Random): T[] {
@@ -124,6 +126,7 @@ export function newGame(problems: ProblemSet, random: Random): GameState {
     reviews: 0,
     mistakes: 0,
     cleared: false,
+    missed: null,
   };
 }
 
@@ -140,11 +143,17 @@ export function submitReview(
   const reviews = state.reviews + 1;
   const mistakes = state.mistakes + (correct ? 0 : 1);
   if (correct && state.round.number >= GOAL) {
-    return { correct, state: { ...state, reviews, mistakes, cleared: true } };
+    return { correct, state: { ...state, reviews, mistakes, cleared: true, missed: null } };
   }
   const nextNumber = correct ? state.round.number + 1 : START;
   const drawn = drawRound(state, nextNumber, random);
-  return { correct, state: { ...state, ...drawn, reviews, mistakes, cleared: false } };
+  const missed = correct ? null : state.round;
+  return { correct, state: { ...state, ...drawn, reviews, mistakes, cleared: false, missed } };
+}
+
+/** 異変のない状態のプルリクエスト（答え合わせで、届いたものと見比べる） */
+export function normalPullRequestFor(problems: ProblemSet, round: Round): PullRequest {
+  return pullRequestFor(problems, { ...round, anomalyId: null });
 }
 
 export function pullRequestFor(problems: ProblemSet, round: Round): PullRequest {

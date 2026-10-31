@@ -9,6 +9,7 @@
   --green-hover: #1a7f37;
   --red: #cf222e;
   --red-bg: #ffebe9;
+  --green-bg: #dafbe1;
   --sign: #f2c200;
   --sign-text: #111111;
   --code-bg: rgba(129, 139, 152, 0.15);
@@ -33,6 +34,7 @@
     --green-hover: #29903b;
     --red: #f85149;
     --red-bg: rgba(248, 81, 73, 0.12);
+    --green-bg: rgba(46, 160, 67, 0.15);
     --code-bg: rgba(101, 108, 118, 0.3);
     --avatar: #8b949e;
     --avatar-eye: #0d1117;
@@ -761,6 +763,117 @@ code {
 .label-ai-generated {
   background: rgba(216, 180, 254, 0.25);
   border-color: #c297ff;
+}
+
+/* ---------------------------------------------------------------- 答え合わせ */
+
+.missed {
+  margin: -12px 0 16px;
+}
+
+.missed-link {
+  font: inherit;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.missed-link::before {
+  content: "↩ ";
+}
+
+.missed-link:hover {
+  text-decoration: underline;
+}
+
+.answer {
+  width: min(720px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.answer::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.answer h2 {
+  font-size: 18px;
+  margin: 0 0 4px;
+}
+
+.answer h3 {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 16px 0 6px;
+}
+
+.answer-title {
+  color: var(--muted);
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+}
+
+.answer-verdict {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.diff {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.diff li {
+  padding: 1px 10px 1px 28px;
+  position: relative;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.diff li::before {
+  position: absolute;
+  left: 10px;
+  font-family: var(--mono);
+  color: var(--muted);
+}
+
+.diff-add {
+  background: var(--green-bg);
+}
+
+.diff-add::before {
+  content: "+";
+}
+
+.diff-del {
+  background: var(--red-bg);
+}
+
+.diff-del::before {
+  content: "−";
+}
+
+.diff-gap {
+  color: var(--muted);
+  background: var(--bg-subtle);
+}
+
+.answer form {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
 /* ---------------------------------------------------------------- 演出 */
