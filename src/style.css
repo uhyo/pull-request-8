@@ -354,6 +354,28 @@ code {
   margin: 0 0 32px;
 }
 
+.ending-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.share-x {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border-color: #fff;
+  color: #000;
+  text-decoration: none;
+}
+
+.share-x svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* ---------------------------------------------------------------- PR 画面 */
 
 .topbar {
