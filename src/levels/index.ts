@@ -42,6 +42,13 @@ export const levels: readonly Level[] = [
   { id: "hard", name: "むずかしい", description: "長く込み入った説明文のプルリクエスト", problems: hard },
 ];
 
+/** 問題を用意してある難易度 */
+export type PlayableLevel = Level & { problems: ProblemSet };
+
+export function isPlayable(l: Level): l is PlayableLevel {
+  return l.problems !== null;
+}
+
 export function findLevel(id: string): Level | undefined {
   return levels.find((l) => l.id === id);
 }

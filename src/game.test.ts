@@ -6,6 +6,8 @@ import {
   newGame,
   normalPullRequestFor,
   pullRequestFor,
+  restoreGame,
+  saveGame,
   submitReview,
   type GameState,
   type Random,
@@ -164,5 +166,32 @@ describe("game", () => {
     for (const round of playRounds(tiny, always, 12)) {
       if (round.anomalyId !== null) expect(ids.has(round.anomalyId)).toBe(true);
     }
+  });
+
+  it("restores a saved game that went through JSON", () => {
+    let state = newGame(easy, always);
+    state = submitReview(state, "approve", always).state;
+    state = submitReview(state, "approve", always).state;
+    expect(state.missed).not.toBeNull();
+    const saved: unknown = JSON.parse(JSON.stringify(saveGame(state)));
+    expect(restoreGame(easy, saved)).toEqual(state);
+  });
+
+  it("does not restore a game the problems no longer fit", () => {
+    const saved = saveGame(newGame(easy, always));
+    expect(restoreGame(easy, null)).toBeNull();
+    expect(restoreGame(easy, { ...saved, round: { ...saved.round, baselineId: "gone" } })).toBeNull();
+    expect(restoreGame(easy, { ...saved, round: { ...saved.round, anomalyId: "gone" } })).toBeNull();
+    expect(restoreGame(easy, { ...saved, round: { ...saved.round, number: GOAL + 1 } })).toBeNull();
+    expect(restoreGame(easy, { ...saved, missed: { number: START } })).toBeNull();
+    expect(restoreGame(easy, { ...saved, reviews: -1 })).toBeNull();
+    expect(restoreGame(easy, { ...saved, cleared: "yes" })).toBeNull();
+  });
+
+  it("drops pull requests and anomalies that are gone from the bags", () => {
+    const saved = saveGame(newGame(easy, always));
+    const state = restoreGame(easy, { ...saved, baselineBag: ["gone", ...saved.baselineBag], anomalyBag: ["gone"] });
+    expect(state?.baselineBag).toEqual(saved.baselineBag);
+    expect(state?.anomalyBag).toEqual([]);
   });
 });
