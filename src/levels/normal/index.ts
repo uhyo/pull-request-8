@@ -5,7 +5,7 @@ import { csvImport } from "./csv-import";
 import { frontendErrorReporting } from "./frontend-error-reporting";
 import { idleLogout } from "./idle-logout";
 import { invoiceTaxRounding } from "./invoice-tax-rounding";
-import { node24 } from "./node-24";
+import { node26 } from "./node-26";
 import { ordersSearchIndex } from "./orders-search-index";
 import { passwordResetExpiry } from "./password-reset-expiry";
 import { searchDebounce } from "./search-debounce";
@@ -19,7 +19,7 @@ export const normal: ProblemSet = {
     auditLog,
     csvImport,
     idleLogout,
-    node24,
+    node26,
     searchDebounce,
     invoiceTaxRounding,
     passwordResetExpiry,
