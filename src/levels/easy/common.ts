@@ -1,40 +1,16 @@
 import { bodyEdit, bodyRewrite, metaEdit, swapSections, type Anomaly } from "../../anomalies";
-import type { PullRequest } from "../../pr";
-
-/** codebot[bot] のプルリクエストで毎回同じになる部分 */
-type Fixed = "author" | "checks" | "timeline" | "notice";
 
 /**
- * codebot[bot] のプルリクエストを作る。
+ * どのプルリクエストにも起こりうる異変
  *
- * 説明文はいつも同じテンプレートで書かれる。どのプルリクエストにも起こる異変（`commonAnomalies`）は
- * このテンプレートの部分を書き換えるので、説明文には次のものを含めること。
+ * かんたんの説明文はいつも同じテンプレートで書かれる。ここの異変はこのテンプレートの部分を書き換えるので、
+ * 説明文には次のものを含めること。
  *
  * - `## 変更内容` と `## テスト` の見出し
  * - `- [x] 既存のテストがすべて通ることを確認` と `- [x] ローカル環境で動作確認`
  * - `破壊的変更はありません。` と `レビューよろしくお願いします 🙏`
  * - 最後の行に `Closes #<Issue 番号>`
  */
-export function codebotPullRequest(fields: Omit<PullRequest, Fixed>): PullRequest {
-  return {
-    ...fields,
-    author: "codebot[bot]",
-    checks: [
-      { name: "lint", status: "success" },
-      { name: "test", status: "success" },
-      { name: "build", status: "success" },
-    ],
-    timeline: ["codebot[bot] が あなた にレビューをリクエストしました"],
-    notice: [
-      "異変を見逃さないこと",
-      "異変を見つけたら、すぐに変更をリクエストすること",
-      "異変が見つからなかったら、承認すること",
-      "プルリクエスト #8 をマージすること",
-    ],
-  };
-}
-
-/** どのプルリクエストにも起こりうる異変 */
 export const commonAnomalies: readonly Anomaly[] = [
   // ---- 説明文: テストと備考 ----
   bodyEdit(
