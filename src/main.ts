@@ -13,6 +13,7 @@ import {
 import { allAnomalies, findBaseline, findLevel, levels, type Level, type ProblemSet } from "./levels";
 import { escapeHtml, renderMarkdown } from "./markdown";
 import type { PullRequest } from "./pr";
+import { clearShareText, xShareUrl } from "./share";
 import { loadCleared, loadDiscovered, saveCleared, saveDiscovered } from "./storage";
 
 type PlayableLevel = Level & { problems: ProblemSet };
@@ -34,6 +35,8 @@ const fmt = (n: number) => n.toLocaleString("ja-JP");
 const issuesUrl = "https://github.com/uhyo/pull-request-8/issues";
 const reportLink = (className: string, text: string) =>
   `<a class="${className}" href="${issuesUrl}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+
+const xLogo = `<svg viewBox="0 0 24 24" role="img" aria-label="X"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
 
 const robotAvatar = `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="11" width="28" height="22" rx="6" fill="currentColor"/><rect x="18.5" y="4" width="3" height="7" fill="currentColor"/><circle cx="20" cy="4" r="2.5" fill="currentColor"/><circle cx="14.5" cy="21" r="3" fill="var(--avatar-eye)"/><circle cx="25.5" cy="21" r="3" fill="var(--avatar-eye)"/><rect x="14" y="27" width="12" height="2" rx="1" fill="var(--avatar-eye)"/></svg>`;
 
@@ -317,6 +320,13 @@ function renderEnding(): void {
     found.length > 0
       ? `<ul class="found-list">${found.map((a) => `<li>${escapeHtml(a.name)}</li>`).join("")}</ul>`
       : `<p class="muted">（異変はひとつも見つかりませんでした）</p>`;
+  const shareText = clearShareText({
+    levelName: level.name,
+    reviews: state.reviews,
+    mistakes: state.mistakes,
+    found: totalFound,
+    totalAnomalies: anomalies.length,
+  });
 
   app.innerHTML = `
     <div class="title-screen ending">
@@ -332,7 +342,10 @@ function renderEnding(): void {
         </dl>
         <h2 class="found-heading">今回見つけた異変</h2>
         ${list}
-        <button class="btn big" id="back" type="button">タイトルへ戻る</button>
+        <div class="ending-actions">
+          <a class="btn big share-x" href="${escapeHtml(xShareUrl(shareText))}" target="_blank" rel="noopener noreferrer">${xLogo}でシェア</a>
+          <button class="btn big" id="back" type="button">タイトルへ戻る</button>
+        </div>
       </div>
     </div>`;
   app.querySelector("#back")!.addEventListener("click", renderTitle);
