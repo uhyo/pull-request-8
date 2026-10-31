@@ -9,7 +9,6 @@
   --green-hover: #1a7f37;
   --red: #cf222e;
   --red-bg: #ffebe9;
-  --green-bg: #dafbe1;
   --sign: #f2c200;
   --sign-text: #111111;
   --code-bg: rgba(129, 139, 152, 0.15);
@@ -34,7 +33,6 @@
     --green-hover: #29903b;
     --red: #f85149;
     --red-bg: rgba(248, 81, 73, 0.12);
-    --green-bg: rgba(46, 160, 67, 0.15);
     --code-bg: rgba(101, 108, 118, 0.3);
     --avatar: #8b949e;
     --avatar-eye: #0d1117;
@@ -826,7 +824,7 @@ code {
   margin: 0 0 4px;
 }
 
-.diff {
+.answer-lines {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -835,37 +833,20 @@ code {
   overflow: hidden;
 }
 
-.diff li {
-  padding: 1px 10px 1px 28px;
-  position: relative;
+.answer-lines li {
+  padding: 1px 10px 1px 12px;
+  border-left: 3px solid transparent;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
-.diff li::before {
-  position: absolute;
-  left: 10px;
-  font-family: var(--mono);
-  color: var(--muted);
-}
-
-.diff-add {
-  background: var(--green-bg);
-}
-
-.diff-add::before {
-  content: "+";
-}
-
-.diff-del {
+.answer-lines .answer-mark {
+  font-weight: 600;
   background: var(--red-bg);
+  border-left-color: var(--red);
 }
 
-.diff-del::before {
-  content: "−";
-}
-
-.diff-gap {
+.answer-gap {
   color: var(--muted);
   background: var(--bg-subtle);
 }

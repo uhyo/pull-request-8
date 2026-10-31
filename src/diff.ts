@@ -5,12 +5,18 @@ export interface DiffLine {
   text: string;
 }
 
-/** プルリクエストの 1 つの項目で変わったところ */
-export interface FieldDiff {
+/** 届いたプルリクエストの 1 行。`marked` は異変のある行 */
+export interface MarkedLine {
+  text: string;
+  marked: boolean;
+}
+
+/** 届いたプルリクエストの 1 つの項目のうち、異変のあるところ */
+export interface FieldMarks {
   /** 項目の名前（画面に表示する） */
   label: string;
-  /** 変わった行と、その前後の行。`null` は省略した部分 */
-  lines: (DiffLine | null)[];
+  /** 異変のある行と、その前後の行。`null` は省略した部分 */
+  lines: (MarkedLine | null)[];
 }
 
 /** 行単位の差分（最長共通部分列） */
@@ -43,12 +49,10 @@ export function diffLines(before: readonly string[], after: readonly string[]): 
   return result;
 }
 
-/** 変わった行の前後 `context` 行だけを残し、それ以外を `null`（省略）にまとめる */
-export function trimContext(lines: readonly DiffLine[], context: number): (DiffLine | null)[] {
-  const keep = lines.map((_, i) =>
-    lines.slice(Math.max(0, i - context), i + context + 1).some((l) => l.kind !== "same"),
-  );
-  const result: (DiffLine | null)[] = [];
+/** 印のある行の前後 `context` 行だけを残し、それ以外を `null`（省略）にまとめる */
+export function trimContext(lines: readonly MarkedLine[], context: number): (MarkedLine | null)[] {
+  const keep = lines.map((_, i) => lines.slice(Math.max(0, i - context), i + context + 1).some((l) => l.marked));
+  const result: (MarkedLine | null)[] = [];
   lines.forEach((line, i) => {
     if (keep[i]) result.push(line);
     else if (result.at(-1) !== null) result.push(null);
@@ -78,12 +82,17 @@ function fields(pr: PullRequest): [label: string, lines: string[]][] {
   ];
 }
 
-/** `before` から `after` で変わった項目 */
-export function diffPullRequests(before: PullRequest, after: PullRequest): FieldDiff[] {
-  const afterFields = fields(after);
-  return fields(before).flatMap(([label, lines], index) => {
-    const diff = diffLines(lines, afterFields[index]![1]);
-    if (diff.every((l) => l.kind === "same")) return [];
-    return [{ label, lines: trimContext(diff, 2) }];
+/**
+ * 届いたプルリクエスト `received` のうち、いつもどおりの `normal` にはない行に印をつけて、その項目を返す。
+ * 答え合わせでは、いつもの内容は見せずに、気づくべきだったところだけを指し示す。
+ */
+export function markAnomaly(normal: PullRequest, received: PullRequest): FieldMarks[] {
+  const receivedFields = fields(received);
+  return fields(normal).flatMap(([label, lines], index) => {
+    const marked = diffLines(lines, receivedFields[index]![1])
+      .filter((l) => l.kind !== "del")
+      .map((l) => ({ text: l.text, marked: l.kind === "add" }));
+    if (!marked.some((l) => l.marked)) return [];
+    return [{ label, lines: trimContext(marked, 1) }];
   });
 }

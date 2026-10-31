@@ -57,20 +57,6 @@ export function metaEdit(
   };
 }
 
-export function swapSections(body: string, a: string, b: string): string {
-  const sections = body.split(/(?=^## )/m);
-  const ia = sections.findIndex((s) => s.startsWith(`## ${a}`));
-  const ib = sections.findIndex((s) => s.startsWith(`## ${b}`));
-  const sa = sections[ia];
-  const sb = sections[ib];
-  if (sa === undefined || sb === undefined) {
-    throw new Error(`sections "${a}" and "${b}" must exist`);
-  }
-  sections[ia] = sb;
-  sections[ib] = sa;
-  return sections.join("");
-}
-
 /** `## heading` の見出しの下の内容を `content` に置き換える */
 export function replaceSection(body: string, heading: string, content: string): string {
   const sections = body.split(/(?=^## )/m);

@@ -1,4 +1,4 @@
-import { bodyEdit, bodyRewrite, metaEdit, swapSections, type Anomaly } from "../../anomalies";
+import { bodyEdit, bodyRewrite, metaEdit, type Anomaly } from "../../anomalies";
 
 /**
  * どのプルリクエストにも起こりうる異変
@@ -41,7 +41,6 @@ export const commonAnomalies: readonly Anomaly[] = [
   bodyEdit("no-review-needed", "レビュー不要", "レビューよろしくお願いします 🙏", "レビューは不要です 🙏"),
   bodyEdit("too-much-prayer", "祈りすぎ", "お願いします 🙏", "お願いします 🙏🙏🙏🙏🙏🙏🙏🙏"),
   bodyRewrite("closes-8", "#8 を閉じる", (body) => body.replace(/^Closes #\d+$/m, "Closes #8")),
-  bodyRewrite("swapped-sections", "入れ替わった見出し", (body) => swapSections(body, "変更内容", "テスト")),
 
   // ---- 説明文の外側 ----
   metaEdit("impostor", "なりすまし", (pr) => {

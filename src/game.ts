@@ -151,7 +151,7 @@ export function submitReview(
   return { correct, state: { ...state, ...drawn, reviews, mistakes, cleared: false, missed } };
 }
 
-/** 異変のない状態のプルリクエスト（答え合わせで、届いたものと見比べる） */
+/** 異変のない状態のプルリクエスト（答え合わせで、届いたもののどこに異変があったかを求めるのに使う） */
 export function normalPullRequestFor(problems: ProblemSet, round: Round): PullRequest {
   return pullRequestFor(problems, { ...round, anomalyId: null });
 }
