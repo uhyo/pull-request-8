@@ -1,6 +1,6 @@
 import { bodyEdit } from "../../anomalies";
 import type { Baseline } from "..";
-import { codebotPullRequest } from "./common";
+import { codebotPullRequest } from "../codebot";
 
 export const ciCache: Baseline = {
   id: "ci-cache",

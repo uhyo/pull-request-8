@@ -1,6 +1,6 @@
 import { bodyEdit, metaEdit, replaceOnce } from "../../anomalies";
 import type { Baseline } from "..";
-import { codebotPullRequest } from "./common";
+import { codebotPullRequest } from "../codebot";
 
 export const csvExportEncoding: Baseline = {
   id: "csv-export-encoding",

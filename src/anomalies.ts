@@ -70,3 +70,13 @@ export function swapSections(body: string, a: string, b: string): string {
   sections[ib] = sa;
   return sections.join("");
 }
+
+/** `## heading` の見出しの下の内容を `content` に置き換える */
+export function replaceSection(body: string, heading: string, content: string): string {
+  const sections = body.split(/(?=^## )/m);
+  const index = sections.findIndex((s) => s.startsWith(`## ${heading}\n`));
+  if (index === -1) throw new Error(`section "${heading}" must exist`);
+  const last = index === sections.length - 1;
+  sections[index] = `## ${heading}\n\n${content}${last ? "" : "\n\n"}`;
+  return sections.join("");
+}

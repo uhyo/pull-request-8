@@ -1,6 +1,7 @@
 import type { Anomaly } from "../anomalies";
 import type { PullRequest } from "../pr";
 import { easy } from "./easy";
+import { normal } from "./normal";
 
 /** 「いつもの」プルリクエストの 1 つと、それだけに起こる異変 */
 export interface Baseline {
@@ -36,7 +37,7 @@ export interface Level {
 /** 難しい難易度ほど、説明文が長く込み入ったプルリクエストになる */
 export const levels: readonly Level[] = [
   { id: "easy", name: "かんたん", description: "短い説明文のプルリクエスト", problems: easy },
-  { id: "normal", name: "ふつう", description: "長めの説明文のプルリクエスト", problems: null },
+  { id: "normal", name: "ふつう", description: "長めの説明文のプルリクエスト", problems: normal },
   { id: "hard", name: "むずかしい", description: "長く込み入った説明文のプルリクエスト", problems: null },
 ];
 
