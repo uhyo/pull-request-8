@@ -600,6 +600,10 @@ code {
   height: 30px;
 }
 
+.avatar-inline {
+  display: none;
+}
+
 .comment-box {
   flex: 1;
   min-width: 0;
@@ -707,6 +711,27 @@ code {
   }
   .panel {
     padding-left: 16px;
+  }
+  /* Move the avatar into the comment header so the body gets the full width. */
+  .comment > .avatar {
+    display: none;
+  }
+  .avatar-inline {
+    display: inline-grid;
+    width: 24px;
+    height: 24px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .avatar-inline svg {
+    width: 18px;
+    height: 18px;
+  }
+  .comment-header {
+    padding: 8px 12px;
+  }
+  .markdown-body {
+    padding: 12px;
   }
 }
 
