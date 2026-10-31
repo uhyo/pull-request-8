@@ -1,10 +1,13 @@
 import "./style.css";
+import { diffPullRequests } from "./diff";
 import {
   GOAL,
   newGame,
+  normalPullRequestFor,
   pullRequestFor,
   submitReview,
   type GameState,
+  type Round,
   type Verdict,
 } from "./game";
 import { allAnomalies, findBaseline, findLevel, levels, type Level, type ProblemSet } from "./levels";
@@ -166,6 +169,8 @@ function renderPullRequest(pr: PullRequest, number: number): string {
         <ol>${notice}</ol>
       </aside>
 
+      ${state.missed ? `<p class="missed"><button class="missed-link" type="button" id="show-missed">#${state.missed.number} の答え合わせをする</button></p>` : ""}
+
       <div class="pr-header">
         <h1><span class="pr-title">${escapeHtml(pr.title)}</span> <span class="pr-number">#${number}</span></h1>
         <p class="pr-meta">
@@ -220,6 +225,56 @@ function renderRound(): void {
   for (const button of app.querySelectorAll<HTMLButtonElement>("[data-verdict]")) {
     button.addEventListener("click", () => void review(button.dataset.verdict as Verdict));
   }
+  const { missed } = state;
+  if (missed) app.querySelector("#show-missed")!.addEventListener("click", () => showAnswer(missed));
+}
+
+// ---------------------------------------------------------------- 答え合わせ
+
+const answerDialog = document.createElement("dialog");
+answerDialog.className = "answer";
+document.body.append(answerDialog);
+// 枠の外（背景）をクリックしても閉じる
+answerDialog.addEventListener("click", (event) => {
+  if (event.target === answerDialog) answerDialog.close();
+});
+
+/** 判断を間違えたラウンドで、何が「いつもどおり」と違っていたかを見せる（見つけた異変には数えない） */
+function showAnswer(round: Round): void {
+  const { problems } = state;
+  const normal = normalPullRequestFor(problems, round);
+  const anomaly = allAnomalies(problems).find((a) => a.id === round.anomalyId);
+  let content: string;
+  if (anomaly) {
+    const diffs = diffPullRequests(normal, pullRequestFor(problems, round))
+      .map(({ label, lines }) => {
+        const rows = lines
+          .map((line) =>
+            line === null
+              ? `<li class="diff-gap">…</li>`
+              : `<li class="diff-${line.kind}">${escapeHtml(line.text) || "&nbsp;"}</li>`,
+          )
+          .join("");
+        return `<h3>${escapeHtml(label)}</h3><ul class="diff">${rows}</ul>`;
+      })
+      .join("");
+    content = `
+      <p class="answer-verdict">異変がありました: <b>${escapeHtml(anomaly.name)}</b></p>
+      <p>変更をリクエストするべきでした。いつもどおりのプルリクエストと比べると、次のところが違っていました。</p>
+      ${diffs}
+      <p class="muted">答え合わせで見た異変は、見つけた異変には数えられません。</p>`;
+  } else {
+    content = `
+      <p class="answer-verdict">異変はありませんでした</p>
+      <p>いつもどおりのプルリクエストだったので、承認するべきでした。</p>`;
+  }
+  answerDialog.innerHTML = `
+    <h2>#${round.number} の答え合わせ</h2>
+    <p class="answer-title">${escapeHtml(normal.title)}</p>
+    ${content}
+    <form method="dialog"><button class="btn" type="submit">閉じる</button></form>`;
+  answerDialog.showModal();
+  answerDialog.scrollTop = 0;
 }
 
 async function review(verdict: Verdict): Promise<void> {
