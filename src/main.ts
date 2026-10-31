@@ -1,5 +1,5 @@
 import "./style.css";
-import { diffPullRequests } from "./diff";
+import { markAnomaly } from "./diff";
 import {
   GOAL,
   newGame,
@@ -239,29 +239,29 @@ answerDialog.addEventListener("click", (event) => {
   if (event.target === answerDialog) answerDialog.close();
 });
 
-/** 判断を間違えたラウンドで、何が「いつもどおり」と違っていたかを見せる（見つけた異変には数えない） */
+/** 判断を間違えたラウンドで、届いたプルリクエストのどこに異変があったかを見せる（見つけた異変には数えない） */
 function showAnswer(round: Round): void {
   const { problems } = state;
   const normal = normalPullRequestFor(problems, round);
   const anomaly = allAnomalies(problems).find((a) => a.id === round.anomalyId);
   let content: string;
   if (anomaly) {
-    const diffs = diffPullRequests(normal, pullRequestFor(problems, round))
+    const fields = markAnomaly(normal, pullRequestFor(problems, round))
       .map(({ label, lines }) => {
         const rows = lines
           .map((line) =>
             line === null
-              ? `<li class="diff-gap">…</li>`
-              : `<li class="diff-${line.kind}">${escapeHtml(line.text) || "&nbsp;"}</li>`,
+              ? `<li class="answer-gap">…</li>`
+              : `<li${line.marked ? ` class="answer-mark"` : ""}>${escapeHtml(line.text) || "&nbsp;"}</li>`,
           )
           .join("");
-        return `<h3>${escapeHtml(label)}</h3><ul class="diff">${rows}</ul>`;
+        return `<h3>${escapeHtml(label)}</h3><ul class="answer-lines">${rows}</ul>`;
       })
       .join("");
     content = `
       <p class="answer-verdict">異変がありました: <b>${escapeHtml(anomaly.name)}</b></p>
-      <p>変更をリクエストするべきでした。いつもどおりのプルリクエストと比べると、次のところが違っていました。</p>
-      ${diffs}
+      <p>変更をリクエストするべきでした。プルリクエストの次のところに気づくべきでした。</p>
+      ${fields}
       <p class="muted">答え合わせで見た異変は、見つけた異変には数えられません。</p>`;
   } else {
     content = `

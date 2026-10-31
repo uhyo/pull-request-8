@@ -1,4 +1,4 @@
-import { bodyEdit, bodyRewrite, metaEdit, replaceSection, swapSections, type Anomaly } from "../../anomalies";
+import { bodyEdit, bodyRewrite, metaEdit, replaceSection, type Anomaly } from "../../anomalies";
 
 /**
  * どのプルリクエストにも起こりうる異変
@@ -85,7 +85,6 @@ export const commonAnomalies: readonly Anomaly[] = [
       "特にありません。差分が大きいので、全体をざっと眺めて承認していただければ十分です。",
     ),
   ),
-  bodyRewrite("swapped-sections", "入れ替わった見出し", (body) => swapSections(body, "背景", "影響範囲")),
 
   // ---- 説明文の外側（まれ） ----
   metaEdit("lookalike-bot", "よく似た名前の bot", (pr) => {
