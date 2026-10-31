@@ -30,6 +30,11 @@ let busy = false;
 
 const fmt = (n: number) => n.toLocaleString("ja-JP");
 
+/** 不具合の報告先。ゲームの進行が消えないように新しいタブで開く */
+const issuesUrl = "https://github.com/uhyo/pull-request-8/issues";
+const reportLink = (className: string, text: string) =>
+  `<a class="${className}" href="${issuesUrl}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+
 const robotAvatar = `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="11" width="28" height="22" rx="6" fill="currentColor"/><rect x="18.5" y="4" width="3" height="7" fill="currentColor"/><circle cx="20" cy="4" r="2.5" fill="currentColor"/><circle cx="14.5" cy="21" r="3" fill="var(--avatar-eye)"/><circle cx="25.5" cy="21" r="3" fill="var(--avatar-eye)"/><rect x="14" y="27" width="12" height="2" rx="1" fill="var(--avatar-eye)"/></svg>`;
 
 // ---------------------------------------------------------------- タイトル
@@ -108,6 +113,7 @@ function renderTitle(): void {
         <h2 class="level-heading">難易度を選んでレビューを始める</h2>
         <div class="levels">${levels.map(renderLevelButton).join("")}</div>
         ${levels.filter(isPlayable).map(renderCollection).join("")}
+        <p class="title-footer">${reportLink("title-report", "不具合の報告は GitHub へ")}</p>
       </div>
     </div>`;
 
@@ -162,6 +168,7 @@ function renderPullRequest(pr: PullRequest, number: number): string {
       <span class="logo" aria-hidden="true">8</span>
       <span class="repo">acme / <b>admin-console</b></span>
       <span class="level-badge">${escapeHtml(level.name)}</span>
+      ${reportLink("topbar-report", "不具合を報告")}
     </header>
     <main class="page">
       <aside class="notice" role="note">
