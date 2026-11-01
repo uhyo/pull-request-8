@@ -119,6 +119,30 @@ function startGame(next: PlayableLevel): void {
   );
 }
 
+/**
+ * 元ネタを知らない人向けのルール説明。
+ * まだ遊んだことがない（どの難易度でもクリアも異変の発見もない）うちは開いておく
+ */
+function renderRules(): string {
+  const firstTime = levels
+    .filter(isPlayable)
+    .every((l) => !loadCleared(l.id) && loadDiscovered(l.id).size === 0);
+  return `
+    <details class="rules"${firstTime ? " open" : ""}>
+      <summary>ルール説明</summary>
+      <ol>
+        <li>AI（<code>codebot[bot]</code>）から、プルリクエストが 1 件ずつ届きます。番号は <b>#1</b> から始まります。</li>
+        <li>説明文を読んで内容に問題がなければ <b class="rule-approve">承認</b>、どこかに異変があれば <b class="rule-request">変更をリクエスト</b> してください。</li>
+        <li>正しく判断すると番号が 1 つ進みます。判断を間違えると <b>#1</b> に戻ります。</li>
+        <li><b>#${GOAL}</b> まで進み、正しく承認してマージできたらクリアです。</li>
+      </ol>
+      <ul class="rules-notes">
+        <li>読めるのは説明文だけです。変更ファイル（差分）は見られません。</li>
+        <li>判断を間違えたときは、そのプルリクエストのどこに異変があったかを答え合わせできます。</li>
+      </ul>
+    </details>`;
+}
+
 function renderTitle(): void {
   app.innerHTML = `
     <div class="title-screen">
@@ -128,6 +152,7 @@ function renderTitle(): void {
         <p class="tagline">AI が書いたプルリクエストを、説明文だけでレビューしてください。</p>
         <h2 class="level-heading">難易度を選んでレビューを始める</h2>
         <div class="levels">${levels.map(renderLevelButton).join("")}</div>
+        ${renderRules()}
         ${levels.filter(isPlayable).map(renderCollection).join("")}
         <p class="title-footer">${reportLink("title-report", "不具合の報告は GitHub へ")}</p>
       </div>

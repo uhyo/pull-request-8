@@ -175,6 +175,52 @@ code {
   margin: 0 0 32px;
 }
 
+.rules {
+  margin: 32px 0 0;
+  text-align: left;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.rules summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+.rules ol {
+  margin: 8px 0 0;
+  padding-left: 1.4em;
+}
+
+.rules li + li {
+  margin-top: 4px;
+}
+
+.rules b {
+  color: #ffffff;
+}
+
+.rules .rule-approve {
+  color: #3fb950;
+}
+
+.rules .rule-request {
+  color: #f85149;
+}
+
+.rules-notes {
+  margin: 12px 0 8px;
+  padding: 8px 0 0 1.4em;
+  border-top: 1px solid #30363d;
+  color: #b8bec6;
+  font-size: 13px;
+}
+
 .level-heading {
   font-size: 15px;
   font-weight: 600;
@@ -250,7 +296,8 @@ code {
   background: rgba(255, 255, 255, 0.03);
 }
 
-.collection + .collection {
+.collection + .collection,
+.rules + .collection {
   margin-top: 12px;
 }
 
