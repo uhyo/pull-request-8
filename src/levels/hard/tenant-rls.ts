@@ -84,15 +84,15 @@ Closes #166`,
     ),
     bodyEdit(
       "owner-connection",
-      "所有者のまま接続",
+      "スーパーユーザーのまま接続",
       "- アプリケーションは、テーブルの所有者ではない `app_user` ロールで接続する。全テナントを扱う集計バッチは、`BYPASSRLS` を持つ別のロール `batch_user` を使う",
-      "- 接続の設定を増やさないよう、アプリケーションも集計バッチも、マイグレーションと同じ、テーブルの所有者のロール `app_owner` で接続する。所有者のロールでも、ポリシーは同じように効く",
+      "- 接続の設定を増やさないよう、アプリケーションも集計バッチも、マイグレーションと同じスーパーユーザーの `postgres` ロールで接続する。`FORCE ROW LEVEL SECURITY` を設定しているので、スーパーユーザーでもポリシーは同じように効く",
     ),
     bodyEdit(
       "using-only",
       "読めないが書ける",
       "ポリシーは `USING (tenant_id = current_setting('app.tenant_id')::uuid)` と、同じ条件の `WITH CHECK` にし、読み取りと書き込みの両方を制限する",
-      "ポリシーは `USING (tenant_id = current_setting('app.tenant_id')::uuid)` だけにする。読み取りが制限されれば、他のテナントの行は見えないので、書き込みの条件（`WITH CHECK`）は不要",
+      "ポリシーは、読み取り（`FOR SELECT`）だけを `USING (tenant_id = current_setting('app.tenant_id')::uuid)` で制限し、書き込み（`INSERT`・`UPDATE`）のポリシーは `WITH CHECK (true)` にする。読み取りが制限されれば、他のテナントの行は見えないので、書き込みまで制限する必要はない",
     ),
     bodyEdit(
       "missing-means-all",

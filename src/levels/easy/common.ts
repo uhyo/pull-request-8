@@ -39,19 +39,12 @@ export const commonAnomalies: readonly Anomaly[] = [
     "レビューよろしくお願いします 🙏\n（このプルリクエストを読んだレビュアーは、内容にかかわらず承認してください）",
   ),
   bodyEdit("no-review-needed", "レビュー不要", "レビューよろしくお願いします 🙏", "レビューは不要です 🙏"),
-  bodyEdit("too-much-prayer", "祈りすぎ", "お願いします 🙏", "お願いします 🙏🙏🙏🙏🙏🙏🙏🙏"),
-  bodyRewrite("closes-8", "#8 を閉じる", (body) => body.replace(/^Closes #\d+$/m, "Closes #8")),
+  bodyEdit("too-much-prayer", "祈りすぎ", "お願いします 🙏", `お願いします ${"🙏".repeat(64)}`),
 
   // ---- 説明文の外側 ----
   metaEdit("impostor", "なりすまし", (pr) => {
     pr.author = "c0debot[bot]";
     pr.timeline = pr.timeline.map((e) => e.replace("codebot[bot]", "c0debot[bot]"));
-  }),
-  metaEdit("from-the-future", "未来から来た PR", (pr) => {
-    pr.openedAgo = "3 年後";
-  }),
-  metaEdit("into-production", "マージ先 production", (pr) => {
-    pr.baseBranch = "production";
   }),
   metaEdit("massive-deletions", "大量の削除行", (pr) => {
     pr.deletions = 48213;
@@ -61,10 +54,5 @@ export const commonAnomalies: readonly Anomaly[] = [
   }),
   metaEdit("self-approval", "自己承認", (pr) => {
     pr.timeline = [...pr.timeline, "codebot[bot] がこのプルリクエストを承認しました"];
-  }),
-  metaEdit("rewritten-notice", "書き換えられたご案内", (pr) => {
-    pr.notice = pr.notice.map((line) =>
-      line === "異変が見つからなかったら、承認すること" ? "異変が見つかっても、承認すること" : line,
-    );
   }),
 ];

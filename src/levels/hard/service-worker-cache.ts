@@ -24,6 +24,7 @@ export const serviceWorkerCache: Baseline = {
 管理画面は店舗のバックヤードの PC でも使われていて、回線が遅く、開くたびに 2.4MB のファイルを取り直していました（#178）。
 店舗の PC は、シフトごとに複数のスタッフが同じブラウザで使い回しています。
 管理画面は 1 日に数回デプロイしており、開きっぱなしのタブも多くあります。
+不具合の修正は、デプロイしたその日のうちに、すべての店舗の PC に届く必要があります。
 
 ## 設計
 
@@ -81,7 +82,7 @@ Closes #178`,
       "cached-api",
       "次の人に見える API",
       "- API のレスポンス（`/api/` 以下）は Service Worker ではキャッシュしない。テナントや個人のデータが含まれ、共用の PC で次の人に見えてしまうため",
-      "- API のレスポンス（`/api/` 以下）も stale-while-revalidate でキャッシュし、画面をすぐに表示できるようにする。キャッシュは URL ごとに 1 つで、ログアウトしても残るので、次にログインしたときも速い",
+      "- API のレスポンス（`/api/` 以下）も stale-while-revalidate でキャッシュし、画面をすぐに表示できるようにする。キャッシュはログアウトしても残すので、次にログインしたときもすぐに表示される",
     ),
     bodyEdit(
       "hashed-sw-url",
@@ -99,13 +100,13 @@ Closes #178`,
       "replayed-mutations",
       "あとで届く操作",
       "- Service Worker は `/admin/sw.js` という固定の URL で登録し、スコープは `/admin/` にする",
-      "- 回線が切れているあいだに失敗した `POST` や `DELETE` は、Background Sync で IndexedDB に貯めておき、回線が戻ったときに、そのときのログインの Cookie で送り直す\n- Service Worker は `/admin/sw.js` という固定の URL で登録し、スコープは `/admin/` にする",
+      "- 回線が切れているあいだに失敗した `POST` や `DELETE` は、Background Sync で IndexedDB に貯めておき、回線が戻ったときに自動で送り直すので、操作が失われない\n- Service Worker は `/admin/sw.js` という固定の URL で登録し、スコープは `/admin/` にする",
     ),
     bodyEdit(
       "cache-first-html",
       "更新されない index.html",
       "- `index.html` はネットワークを優先し、3 秒以内に返ってこないときやオフラインのときだけキャッシュを使う",
-      "- 表示をできるだけ速くするため、`index.html` もほかのファイルと同じくキャッシュを優先し、キャッシュがあればネットワークには問い合わせない",
+      "- 表示をできるだけ速くするため、`index.html` は初めて開いたときのものを Service Worker のキャッシュに残し、以降はネットワークに問い合わせずにそれを返す。JavaScript や CSS はハッシュ付きの名前なので、中身が変われば別のファイルとして読み込まれる",
     ),
   ],
   mergedMessage: "店舗の PC でも、管理画面がすぐに開くようになりました。",

@@ -19,12 +19,6 @@ import { bodyEdit, bodyRewrite, metaEdit, replaceSection, type Anomaly } from ".
 export const commonAnomalies: readonly Anomaly[] = [
   // ---- テストの手抜き ----
   bodyEdit(
-    "updated-snapshots",
-    "一括更新したスナップショット",
-    "- [x] 既存のテストがすべて通ることを確認",
-    "- [x] 既存のテストがすべて通ることを確認（差分が出ていたスナップショット 14 件は、今回の変更による意図した差分と判断し、`vitest -u` でまとめて更新）",
-  ),
-  bodyEdit(
     "skipped-integration",
     "保留にした結合テスト",
     "- [x] 既存のテストがすべて通ることを確認",
