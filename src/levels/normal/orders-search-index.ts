@@ -72,7 +72,6 @@ Closes #141`,
       "- インデックスは `CREATE INDEX CONCURRENTLY` で作成し、作成中もテーブルへの書き込みを止めない",
       "- `CONCURRENTLY` を付けるとエラーになったため外した（インデックスを作成している 10 分ほどは、注文を受け付けられません）",
     ),
-    bodyEdit("wrong-columns", "関係ない列", "`(customer_id, ordered_at)`", "`(shipping_note, updated_at)`"),
     bodyEdit(
       "unmeasured",
       "測っていない速さ",
