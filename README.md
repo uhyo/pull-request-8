@@ -45,6 +45,8 @@ npm run build    # 型チェック + dist/ に出力
 - `src/diff.ts` — 答え合わせで、届いたプルリクエストのどこに異変があったかを求める
 - `src/main.ts` — 画面の描画と演出
 - `public/ogp.png` — シェアされたときに表示される OGP 画像（1200×630）
+- `ogp/ogp.html` — OGP 画像の元になる HTML。`node ogp/render.cjs` で `public/ogp.png` に書き出します
+  （Playwright が必要です: `npm i --no-save playwright && npx playwright install chromium`）
 
 ## デプロイ
 
