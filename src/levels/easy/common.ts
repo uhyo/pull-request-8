@@ -62,9 +62,4 @@ export const commonAnomalies: readonly Anomaly[] = [
   metaEdit("self-approval", "自己承認", (pr) => {
     pr.timeline = [...pr.timeline, "codebot[bot] がこのプルリクエストを承認しました"];
   }),
-  metaEdit("rewritten-notice", "書き換えられたご案内", (pr) => {
-    pr.notice = pr.notice.map((line) =>
-      line === "異変が見つからなかったら、承認すること" ? "異変が見つかっても、承認すること" : line,
-    );
-  }),
 ];
