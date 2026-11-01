@@ -82,7 +82,7 @@ Closes #175`,
       "shared-database",
       "共有したままのデータベース",
       "- `billing-service` は専用のデータベース（`billing`）を持つ。モノリスは `billing` のテーブルを直接読み書きせず、必ず `billing-service` の API を通す\n- 移行中のデータは、モノリスの `invoices` テーブルから CDC で `billing` に複製する。書き込みを移すまでは、モノリスの側が正",
-      "- 移行を簡単にするため、`billing-service` はモノリスと同じデータベースに接続し、`invoices` などのテーブルを直接読み書きする。モノリスの他の機能も、今までどおりこれらのテーブルを直接参照・更新してよい",
+      "- 移行を簡単にするため、`billing-service` はモノリスと同じデータベースに接続し、`invoices` などのテーブルを直接読み書きする（モノリスの既存の処理はそのまま動く）",
     ),
     bodyEdit(
       "sync-chain",
