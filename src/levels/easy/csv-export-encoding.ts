@@ -32,7 +32,7 @@ export const csvExportEncoding: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+破壊的変更（後方互換性のない変更）はありません。
 レビューよろしくお願いします 🙏
 
 Closes #57`,
@@ -72,8 +72,8 @@ Closes #57`,
     bodyEdit(
       "excel-only",
       "Excel 専用",
-      "破壊的変更はありません。",
-      "Excel 以外では開けなくなりますが、破壊的変更はありません。",
+      "破壊的変更（後方互換性のない変更）はありません。",
+      "Excel 以外では開けなくなりますが、破壊的変更（後方互換性のない変更）はありません。",
     ),
     metaEdit("garbling-fix", "文字化けするように修正", (pr) => {
       pr.title = replaceOnce(pr.title, "文字化けする問題を修正", "文字化けするように修正");

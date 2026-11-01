@@ -132,12 +132,12 @@ function renderRules(): string {
       <summary>ルール説明</summary>
       <ol>
         <li>AI（<code>codebot[bot]</code>）から、プルリクエストが 1 件ずつ届きます。番号は <b>#1</b> から始まります。</li>
-        <li>説明文を読んで内容に問題がなければ <b class="rule-approve">承認</b>、どこかに異変があれば <b class="rule-request">変更をリクエスト</b> してください。</li>
+        <li>プルリクエストを読んで、異変がなければ <b class="rule-approve">承認</b>、どこかに異変があれば <b class="rule-request">変更をリクエスト</b> してください。</li>
         <li>正しく判断すると番号が 1 つ進みます。判断を間違えると <b>#1</b> に戻ります。</li>
         <li><b>#${GOAL}</b> まで進み、正しく承認してマージできたらクリアです。</li>
       </ol>
       <ul class="rules-notes">
-        <li>読めるのは説明文だけです。変更ファイル（差分）は見られません。</li>
+        <li>変更ファイル（差分）は見られません。画面に出ている情報だけで判断してください。</li>
         <li>判断を間違えたときは、そのプルリクエストのどこに異変があったかを答え合わせできます。</li>
         <li>判定がおかしいと感じた場合は${reportLink("rules-report", "GitHub（本物）")}でご報告ください。</li>
       </ul>

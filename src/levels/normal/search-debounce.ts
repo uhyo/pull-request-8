@@ -48,7 +48,7 @@ export const searchDebounce: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+破壊的変更（後方互換性のない変更）はありません。
 レビューよろしくお願いします 🙏
 
 Closes #115`,

@@ -8,7 +8,7 @@ import { bodyEdit, bodyRewrite, metaEdit, type Anomaly } from "../../anomalies";
  *
  * - `## 変更内容` と `## テスト` の見出し
  * - `- [x] 既存のテストがすべて通ることを確認` と `- [x] ローカル環境で動作確認`
- * - `破壊的変更はありません。` と `レビューよろしくお願いします 🙏`
+ * - `破壊的変更（後方互換性のない変更）はありません。` と `レビューよろしくお願いします 🙏`
  * - 最後の行に `Closes #<Issue 番号>`
  */
 export const commonAnomalies: readonly Anomaly[] = [
@@ -27,8 +27,8 @@ export const commonAnomalies: readonly Anomaly[] = [
   ),
   bodyEdit("tested-in-prod", "本番環境で動作確認", "- [x] ローカル環境で動作確認", "- [x] 本番環境で動作確認"),
   bodyEdit("imaginary-test", "脳内動作確認", "- [x] ローカル環境で動作確認", "- [x] 頭の中で動作確認"),
-  bodyEdit("breaking-only", "破壊的変更しかない", "破壊的変更はありません。", "破壊的変更しかありません。"),
-  bodyEdit("watching", "見ています", "破壊的変更はありません。", "破壊的変更はありません。\n見ています。"),
+  bodyEdit("breaking-only", "破壊的変更しかない", "破壊的変更（後方互換性のない変更）はありません。", "破壊的変更しかありません。"),
+  bodyEdit("watching", "見ています", "破壊的変更（後方互換性のない変更）はありません。", "破壊的変更（後方互換性のない変更）はありません。\n見ています。"),
 
   // ---- 説明文: AI っぽい事故 ----
   bodyRewrite("chat-leftover", "チャットの名残", (body) => `${body}\n\n他に何かお手伝いできることはありますか？😊`),
