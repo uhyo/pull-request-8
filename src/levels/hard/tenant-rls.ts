@@ -92,7 +92,7 @@ Closes #166`,
       "using-only",
       "読めないが書ける",
       "ポリシーは `USING (tenant_id = current_setting('app.tenant_id')::uuid)` と、同じ条件の `WITH CHECK` にし、読み取りと書き込みの両方を制限する",
-      "ポリシーは `USING (tenant_id = current_setting('app.tenant_id')::uuid)` だけにする。読み取りが制限されれば、他のテナントの行は見えないので、書き込みの条件（`WITH CHECK`）は不要",
+      "ポリシーは、読み取り（`FOR SELECT`）だけを `USING (tenant_id = current_setting('app.tenant_id')::uuid)` で制限し、書き込み（`INSERT`・`UPDATE`）のポリシーは `WITH CHECK (true)` にする。読み取りが制限されれば、他のテナントの行は見えないので、書き込みまで制限する必要はない",
     ),
     bodyEdit(
       "missing-means-all",

@@ -22,7 +22,7 @@ export const commonAnomalies: readonly Anomaly[] = [
     "updated-snapshots",
     "一括更新したスナップショット",
     "- [x] 既存のテストがすべて通ることを確認",
-    "- [x] 既存のテストがすべて通ることを確認（差分が出ていたスナップショット 14 件は、今回の変更による意図した差分と判断し、`vitest -u` でまとめて更新）",
+    "- [x] 既存のテストがすべて通ることを確認（今回の変更とは関係のない画面のスナップショット 14 件で差分が出ていたため、中身は確認せずに `vitest -u` でまとめて更新）",
   ),
   bodyEdit(
     "skipped-integration",
