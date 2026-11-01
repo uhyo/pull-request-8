@@ -139,6 +139,7 @@ function renderRules(): string {
       <ul class="rules-notes">
         <li>読めるのは説明文だけです。変更ファイル（差分）は見られません。</li>
         <li>判断を間違えたときは、そのプルリクエストのどこに異変があったかを答え合わせできます。</li>
+        <li>判定がおかしいと感じた場合は${reportLink("rules-report", "GitHub（本物）")}でご報告ください。</li>
       </ul>
     </details>`;
 }

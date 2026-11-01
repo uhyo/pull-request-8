@@ -221,6 +221,14 @@ code {
   font-size: 13px;
 }
 
+.rules-report {
+  color: #58a6ff;
+}
+
+.rules-report:hover {
+  color: #79c0ff;
+}
+
 .level-heading {
   font-size: 15px;
   font-weight: 600;
