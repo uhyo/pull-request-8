@@ -47,6 +47,15 @@ describe.each(playable)("problems of %s", (_, problems: ProblemSet) => {
       expect(base.body).not.toMatch(/スクリーンショット|スクショ|録画|動画|GIF|!\[|[をで]添付し|下の図|以下の図|図のとおり/);
     });
 
+    // 「API に破壊的変更はありません。」は API を変更するプルリクエストにだけ書く
+    it("mentions breaking changes only if it changes the API", () => {
+      if (baseline.api) {
+        expect(base.body).toContain("\nAPI に破壊的変更はありません。\nレビューよろしくお願いします 🙏\n");
+      } else {
+        expect(base.body).not.toContain("破壊的変更");
+      }
+    });
+
     it("is not mutated by its anomalies", () => {
       const snapshot = clonePullRequest(base);
       for (const a of anomaliesFor(problems, baselineId)) a.apply(base);

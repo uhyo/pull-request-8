@@ -72,7 +72,6 @@ export const virtualizedTable: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #184`,

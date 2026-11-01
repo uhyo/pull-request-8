@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const tenantRls: Baseline = {
   id: "tenant-rls",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "PostgreSQL の行レベルセキュリティでテナントのデータを分離",
     baseBranch: "main",
@@ -70,7 +71,7 @@ export const tenantRls: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #166`,

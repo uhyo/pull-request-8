@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const reportReadReplica: Baseline = {
   id: "report-read-replica",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "レポート画面の集計クエリをリードレプリカに逃がす",
     baseBranch: "main",
@@ -70,7 +71,7 @@ export const reportReadReplica: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #160`,

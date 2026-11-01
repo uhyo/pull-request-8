@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const usersPagination: Baseline = {
   id: "users-pagination",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "ユーザー一覧画面にページネーションを追加",
     baseBranch: "main",
@@ -34,7 +35,7 @@ export const usersPagination: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #42`,

@@ -1,6 +1,6 @@
 import type { ProblemSet } from "..";
 import { auditLog } from "./audit-log";
-import { commonAnomalies } from "./common";
+import { apiAnomalies, commonAnomalies } from "./common";
 import { csvImport } from "./csv-import";
 import { frontendErrorReporting } from "./frontend-error-reporting";
 import { idleLogout } from "./idle-logout";
@@ -30,4 +30,5 @@ export const normal: ProblemSet = {
     frontendErrorReporting,
   ],
   commonAnomalies,
+  apiAnomalies,
 };

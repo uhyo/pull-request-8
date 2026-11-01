@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const passwordResetExpiry: Baseline = {
   id: "password-reset-expiry",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "パスワード再設定リンクに有効期限を設ける",
     baseBranch: "main",
@@ -50,7 +51,7 @@ export const passwordResetExpiry: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #126`,

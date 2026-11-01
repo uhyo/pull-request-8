@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const permissionCache: Baseline = {
   id: "permission-cache",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "権限チェックの結果を Redis にキャッシュし、API の p99 を改善",
     baseBranch: "main",
@@ -70,7 +71,7 @@ API のリクエストごとに行っていた権限の計算結果を Redis に
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #158`,

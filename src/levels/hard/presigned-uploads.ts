@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const presignedUploads: Baseline = {
   id: "presigned-uploads",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "添付ファイルを S3 の署名付き URL で直接アップロードする",
     baseBranch: "main",
@@ -70,7 +71,7 @@ API サーバーは、S3 の署名付き URL を発行するだけになりま�
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #168`,

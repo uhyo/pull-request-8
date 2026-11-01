@@ -1,6 +1,6 @@
 import type { ProblemSet } from "..";
 import { ciCache } from "./ci-cache";
-import { commonAnomalies } from "./common";
+import { apiAnomalies, commonAnomalies } from "./common";
 import { csvExportEncoding } from "./csv-export-encoding";
 import { darkMode } from "./dark-mode";
 import { dateFnsUpdate } from "./date-fns-update";
@@ -30,4 +30,5 @@ export const easy: ProblemSet = {
     termsTypo,
   ],
   commonAnomalies,
+  apiAnomalies,
 };
