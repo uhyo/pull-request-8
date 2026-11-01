@@ -11,7 +11,7 @@ import { bodyEdit, bodyRewrite, metaEdit, replaceSection, type Anomaly } from ".
  * - `破壊的変更はありません。` と `レビューよろしくお願いします 🙏`
  * - 最後の行に `Closes #<Issue 番号>`
  *
- * ふつうでは、説明文の外側（作成者・タイムラインなど）の異変はまれにしか起こらない。
+ * ふつうでは、説明文の外側（タイムラインなど）の異変はまれにしか起こらない。
  * かわりに、AI がやってはいけないことをしたり、ありもしないことを書いたりする。
  */
 export const commonAnomalies: readonly Anomaly[] = [
@@ -87,10 +87,6 @@ export const commonAnomalies: readonly Anomaly[] = [
   ),
 
   // ---- 説明文の外側（まれ） ----
-  metaEdit("lookalike-bot", "よく似た名前の bot", (pr) => {
-    pr.author = "codebots[bot]";
-    pr.timeline = pr.timeline.map((e) => e.replace("codebot[bot]", "codebots[bot]"));
-  }),
   metaEdit("branch-protection-off", "ブランチ保護の解除", (pr) => {
     pr.timeline = [...pr.timeline, "codebot[bot] が main ブランチの保護ルールを無効にしました"];
   }),

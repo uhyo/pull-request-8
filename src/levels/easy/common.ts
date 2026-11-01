@@ -47,12 +47,6 @@ export const commonAnomalies: readonly Anomaly[] = [
     pr.author = "c0debot[bot]";
     pr.timeline = pr.timeline.map((e) => e.replace("codebot[bot]", "c0debot[bot]"));
   }),
-  metaEdit("from-the-future", "未来から来た PR", (pr) => {
-    pr.openedAgo = "3 年後";
-  }),
-  metaEdit("into-production", "マージ先 production", (pr) => {
-    pr.baseBranch = "production";
-  }),
   metaEdit("massive-deletions", "大量の削除行", (pr) => {
     pr.deletions = 48213;
   }),
