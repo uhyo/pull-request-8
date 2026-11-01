@@ -41,6 +41,12 @@ describe.each(playable)("problems of %s", (_, problems: ProblemSet) => {
       },
     );
 
+    // 画面に出るのは説明文の Markdown（テキスト）だけなので、添付したスクリーンショットや図などに触れると、
+    // いつもの説明文なのに、あるはずのものがない異変に見えてしまう
+    it("does not refer to attachments that the screen cannot show", () => {
+      expect(base.body).not.toMatch(/スクリーンショット|スクショ|録画|動画|GIF|!\[|[をで]添付し|下の図|以下の図|図のとおり/);
+    });
+
     it("is not mutated by its anomalies", () => {
       const snapshot = clonePullRequest(base);
       for (const a of anomaliesFor(problems, baselineId)) a.apply(base);
