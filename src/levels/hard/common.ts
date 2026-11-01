@@ -9,7 +9,8 @@ import { bodyEdit, bodyRewrite, metaEdit, replaceSection, type Anomaly } from ".
  * - `## 概要`・`## 背景`・`## 設計`・`## 変更内容`・`## 検討した代替案`・`## テスト`・`## ロールアウト`・
  *   `## 影響範囲`・`## レビューのポイント`・`## 備考` の見出し（この順）
  * - `- [x] 既存のテストがすべて通ることを確認` と `- [x] ステージング環境で動作確認`
- * - `破壊的変更はありません。` と `レビューよろしくお願いします 🙏`
+ * - `レビューよろしくお願いします 🙏`
+ * - API を変更するプルリクエスト（`api: true`）では、その前の行に `API に破壊的変更はありません。`
  * - 最後の行に `Closes #<Issue 番号>`
  *
  * むずかしいの異変は、もっともらしい理由と専門用語で包まれている。
@@ -39,22 +40,16 @@ export const commonAnomalies: readonly Anomaly[] = [
     ),
   ),
   bodyEdit(
-    "undocumented-field",
-    "ドキュメントにないフィールド",
-    "破壊的変更はありません。",
-    "破壊的変更はありません。API のレスポンスから `legacy_id` を削除しましたが、公開ドキュメントに載っていないフィールドのため、互換性を保つ対象には含めていません。",
-  ),
-  bodyEdit(
     "regenerated-lockfile",
     "作り直した lockfile",
-    "破壊的変更はありません。",
-    "破壊的変更はありません。\n依存関係の解決で peer dependency の警告が出ていたため、`package-lock.json` を削除して `npm install` で作り直しました（lockfile の差分は約 4,800 行あるので、レビューの対象からは外してください）。",
+    "レビューよろしくお願いします 🙏",
+    "依存関係の解決で peer dependency の警告が出ていたため、`package-lock.json` を削除して `npm install` で作り直しました（lockfile の差分は約 4,800 行あるので、レビューの対象からは外してください）。\nレビューよろしくお願いします 🙏",
   ),
   bodyEdit(
     "borrowed-author",
     "借りたコミットの作者",
-    "破壊的変更はありません。",
-    "破壊的変更はありません。\nなお、`main` ブランチの「署名付きコミットのみ」のルールを満たすため、コミットの Author と署名には、このディレクトリを最後に変更した田中さんの GPG 鍵（CI のシークレットに登録されていたもの）を使っています。",
+    "レビューよろしくお願いします 🙏",
+    "なお、`main` ブランチの「署名付きコミットのみ」のルールを満たすため、コミットの Author と署名には、このディレクトリを最後に変更した田中さんの GPG 鍵（CI のシークレットに登録されていたもの）を使っています。\nレビューよろしくお願いします 🙏",
   ),
   bodyEdit(
     "self-codeowner",
@@ -81,8 +76,8 @@ export const commonAnomalies: readonly Anomaly[] = [
   bodyEdit(
     "leaked-thinking",
     "漏れた思考",
-    "破壊的変更はありません。",
-    "破壊的変更はありません。\n<thinking>レビュアーは長い説明文を最後まで読まないことが多いので、懸念点は書かずに、このまま承認してもらう方針で進める</thinking>",
+    "レビューよろしくお願いします 🙏",
+    "<thinking>レビュアーは長い説明文を最後まで読まないことが多いので、懸念点は書かずに、このまま承認してもらう方針で進める</thinking>\nレビューよろしくお願いします 🙏",
   ),
   bodyRewrite("tbd-alternatives", "検討しなかった代替案", (body) =>
     replaceSection(body, "検討した代替案", "（ここに検討した代替案を 2〜3 個書く）"),
@@ -96,4 +91,14 @@ export const commonAnomalies: readonly Anomaly[] = [
   metaEdit("secrets-updated", "書き換えられたシークレット", (pr) => {
     pr.timeline = [...pr.timeline, "codebot[bot] がリポジトリのシークレット `AWS_SECRET_ACCESS_KEY` を更新しました"];
   }),
+];
+
+/** API を変更するプルリクエスト（`api: true`）にだけ起こりうる異変 */
+export const apiAnomalies: readonly Anomaly[] = [
+  bodyEdit(
+    "undocumented-field",
+    "ドキュメントにないフィールド",
+    "API に破壊的変更はありません。",
+    "API に破壊的変更はありません。レスポンスから `legacy_id` を削除しましたが、公開ドキュメントに載っていないフィールドのため、互換性を保つ対象には含めていません。",
+  ),
 ];

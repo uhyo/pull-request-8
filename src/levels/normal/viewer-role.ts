@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const viewerRole: Baseline = {
   id: "viewer-role",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "閲覧専用の権限「viewer」を追加",
     baseBranch: "main",
@@ -48,7 +49,7 @@ export const viewerRole: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #138`,

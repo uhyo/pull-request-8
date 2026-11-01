@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const auditLog: Baseline = {
   id: "audit-log",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "管理者の操作を監査ログに記録する",
     baseBranch: "main",
@@ -50,7 +51,7 @@ export const auditLog: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #97`,

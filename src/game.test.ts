@@ -161,6 +161,7 @@ describe("game", () => {
     const tiny: ProblemSet = {
       baselines: easy.baselines.map((b) => ({ ...b, anomalies: [] })),
       commonAnomalies: easy.commonAnomalies.slice(0, 2),
+      apiAnomalies: [],
     };
     const ids = new Set(tiny.commonAnomalies.map((a) => a.id));
     for (const round of playRounds(tiny, always, 12)) {

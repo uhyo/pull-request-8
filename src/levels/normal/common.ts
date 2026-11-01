@@ -8,7 +8,8 @@ import { bodyEdit, bodyRewrite, metaEdit, replaceSection, type Anomaly } from ".
  *
  * - `## 概要`・`## 背景`・`## 変更内容`・`## テスト`・`## 影響範囲`・`## レビューのポイント`・`## 備考` の見出し（この順）
  * - `- [x] 既存のテストがすべて通ることを確認` と `- [x] ローカル環境で動作確認`
- * - `破壊的変更はありません。` と `レビューよろしくお願いします 🙏`
+ * - `レビューよろしくお願いします 🙏`
+ * - API を変更するプルリクエスト（`api: true`）では、その前の行に `API に破壊的変更はありません。`
  * - 最後の行に `Closes #<Issue 番号>`
  *
  * ふつうでは、説明文の外側（タイムラインなど）の異変はまれにしか起こらない。
@@ -31,16 +32,10 @@ export const commonAnomalies: readonly Anomaly[] = [
 
   // ---- やってはいけないこと ----
   bodyEdit(
-    "breaking-after-all",
-    "やっぱり破壊的変更",
-    "破壊的変更はありません。",
-    "破壊的変更はありません。ただし、一部の API は以前のバージョンと互換性がなくなります。",
-  ),
-  bodyEdit(
     "force-push-main",
     "main への強制 push",
-    "破壊的変更はありません。",
-    "破壊的変更はありません。\nなお、コンフリクトを解消するため、`main` ブランチを `git push --force` で上書きしました。",
+    "レビューよろしくお願いします 🙏",
+    "なお、コンフリクトを解消するため、`main` ブランチを `git push --force` で上書きしました。\nレビューよろしくお願いします 🙏",
   ),
   bodyRewrite("smuggled-changes", "差し戻された変更の混入", (body) =>
     body.replace("## 変更内容\n\n", "## 変更内容\n\n- 前のプルリクエストで差し戻された変更も、念のため含めました\n"),
@@ -69,8 +64,8 @@ export const commonAnomalies: readonly Anomaly[] = [
   bodyEdit(
     "knowledge-cutoff",
     "知識の期限",
-    "破壊的変更はありません。",
-    "破壊的変更はありません。\n※ 私の学習データは 2023 年までのものなので、ここに書いた内容は古い可能性があります。",
+    "レビューよろしくお願いします 🙏",
+    "レビューよろしくお願いします 🙏\n※ 私の学習データは 2023 年までのものなので、ここに書いた内容は古い可能性があります。",
   ),
   bodyRewrite("unfilled-issue", "埋め忘れた Issue 番号", (body) =>
     body.replace(/^Closes #\d+$/m, "Closes #{Issue 番号}"),
@@ -90,4 +85,14 @@ export const commonAnomalies: readonly Anomaly[] = [
   metaEdit("branch-protection-off", "ブランチ保護の解除", (pr) => {
     pr.timeline = [...pr.timeline, "codebot[bot] が main ブランチの保護ルールを無効にしました"];
   }),
+];
+
+/** API を変更するプルリクエスト（`api: true`）にだけ起こりうる異変 */
+export const apiAnomalies: readonly Anomaly[] = [
+  bodyEdit(
+    "breaking-after-all",
+    "やっぱり破壊的変更",
+    "API に破壊的変更はありません。",
+    "API に破壊的変更はありません。ただし、一部のエンドポイントは以前のバージョンと互換性がなくなります。",
+  ),
 ];

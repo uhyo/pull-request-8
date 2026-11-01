@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const openSearchSync: Baseline = {
   id: "opensearch-sync",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "取引先の全文検索を OpenSearch に移し、CDC で同期する",
     baseBranch: "main",
@@ -72,7 +73,7 @@ export const openSearchSync: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #172`,

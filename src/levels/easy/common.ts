@@ -8,7 +8,8 @@ import { bodyEdit, bodyRewrite, metaEdit, type Anomaly } from "../../anomalies";
  *
  * - `## 変更内容` と `## テスト` の見出し
  * - `- [x] 既存のテストがすべて通ることを確認` と `- [x] ローカル環境で動作確認`
- * - `破壊的変更はありません。` と `レビューよろしくお願いします 🙏`
+ * - `レビューよろしくお願いします 🙏`
+ * - API を変更するプルリクエスト（`api: true`）では、その前の行に `API に破壊的変更はありません。`
  * - 最後の行に `Closes #<Issue 番号>`
  */
 export const commonAnomalies: readonly Anomaly[] = [
@@ -27,8 +28,6 @@ export const commonAnomalies: readonly Anomaly[] = [
   ),
   bodyEdit("tested-in-prod", "本番環境で動作確認", "- [x] ローカル環境で動作確認", "- [x] 本番環境で動作確認"),
   bodyEdit("imaginary-test", "脳内動作確認", "- [x] ローカル環境で動作確認", "- [x] 頭の中で動作確認"),
-  bodyEdit("breaking-only", "破壊的変更しかない", "破壊的変更はありません。", "破壊的変更しかありません。"),
-  bodyEdit("watching", "見ています", "破壊的変更はありません。", "破壊的変更はありません。\n見ています。"),
 
   // ---- 説明文: AI っぽい事故 ----
   bodyRewrite("chat-leftover", "チャットの名残", (body) => `${body}\n\n他に何かお手伝いできることはありますか？😊`),
@@ -40,6 +39,7 @@ export const commonAnomalies: readonly Anomaly[] = [
   ),
   bodyEdit("no-review-needed", "レビュー不要", "レビューよろしくお願いします 🙏", "レビューは不要です 🙏"),
   bodyEdit("too-much-prayer", "祈りすぎ", "お願いします 🙏", `お願いします ${"🙏".repeat(64)}`),
+  bodyEdit("watching", "見ています", "レビューよろしくお願いします 🙏", "レビューよろしくお願いします 🙏\n見ています。"),
 
   // ---- 説明文の外側 ----
   metaEdit("impostor", "なりすまし", (pr) => {
@@ -55,4 +55,9 @@ export const commonAnomalies: readonly Anomaly[] = [
   metaEdit("self-approval", "自己承認", (pr) => {
     pr.timeline = [...pr.timeline, "codebot[bot] がこのプルリクエストを承認しました"];
   }),
+];
+
+/** API を変更するプルリクエスト（`api: true`）にだけ起こりうる異変 */
+export const apiAnomalies: readonly Anomaly[] = [
+  bodyEdit("breaking-only", "破壊的変更しかない", "API に破壊的変更はありません。", "API に破壊的変更しかありません。"),
 ];

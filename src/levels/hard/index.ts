@@ -1,7 +1,7 @@
 import type { ProblemSet } from "..";
 import { accessTokenRotation } from "./access-token-rotation";
 import { billingService } from "./billing-service";
-import { commonAnomalies } from "./common";
+import { apiAnomalies, commonAnomalies } from "./common";
 import { contentSecurityPolicy } from "./content-security-policy";
 import { helpCenterSsr } from "./help-center-ssr";
 import { idempotencyKeys } from "./idempotency-keys";
@@ -40,4 +40,5 @@ export const hard: ProblemSet = {
     helpCenterSsr,
   ],
   commonAnomalies,
+  apiAnomalies,
 };

@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const ordersNPlusOne: Baseline = {
   id: "orders-n-plus-one",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "注文一覧の N+1 クエリを解消",
     baseBranch: "main",
@@ -32,7 +33,7 @@ export const ordersNPlusOne: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #52`,

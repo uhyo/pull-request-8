@@ -4,6 +4,7 @@ import { codebotPullRequest } from "../codebot";
 
 export const idempotencyKeys: Baseline = {
   id: "idempotency-keys",
+  api: true,
   pullRequest: codebotPullRequest({
     title: "支払い API に Idempotency-Key を導入し、二重請求を防ぐ",
     baseBranch: "main",
@@ -73,7 +74,7 @@ API は 6 台の Pod で動いています。
 
 ## 備考
 
-破壊的変更はありません。
+API に破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #152`,

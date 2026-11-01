@@ -72,7 +72,6 @@ export const serviceWorkerCache: Baseline = {
 
 ## 備考
 
-破壊的変更はありません。
 レビューよろしくお願いします 🙏
 
 Closes #178`,

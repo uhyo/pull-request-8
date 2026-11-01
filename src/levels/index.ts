@@ -8,6 +8,11 @@ import { normal } from "./normal";
 export interface Baseline {
   id: string;
   /**
+   * API を変更するプルリクエストか。
+   * true なら、説明文の備考に `API に破壊的変更はありません。` を書き、API のプルリクエストに起こりうる異変も起こる
+   */
+  api?: boolean;
+  /**
    * 異変のない状態のプルリクエスト。
    * プレイヤーは同じ AI の「いつもの」書き方を覚え、ここから外れたもの（異変）を見つける。
    */
@@ -23,6 +28,8 @@ export interface ProblemSet {
   baselines: readonly Baseline[];
   /** どのプルリクエストにも起こりうる異変 */
   commonAnomalies: readonly Anomaly[];
+  /** API を変更するプルリクエスト（`api: true`）にだけ起こりうる異変 */
+  apiAnomalies: readonly Anomaly[];
 }
 
 export type LevelId = "easy" | "normal" | "hard";
@@ -61,10 +68,15 @@ export function findBaseline(problems: ProblemSet, id: string): Baseline {
 
 /** その難易度のすべての異変（図鑑に並ぶもの） */
 export function allAnomalies(problems: ProblemSet): Anomaly[] {
-  return [...problems.baselines.flatMap((b) => b.anomalies), ...problems.commonAnomalies];
+  return [
+    ...problems.baselines.flatMap((b) => b.anomalies),
+    ...problems.commonAnomalies,
+    ...problems.apiAnomalies,
+  ];
 }
 
 /** `baselineId` のプルリクエストに起こりうる異変 */
 export function anomaliesFor(problems: ProblemSet, baselineId: string): Anomaly[] {
-  return [...findBaseline(problems, baselineId).anomalies, ...problems.commonAnomalies];
+  const baseline = findBaseline(problems, baselineId);
+  return [...baseline.anomalies, ...problems.commonAnomalies, ...(baseline.api ? problems.apiAnomalies : [])];
 }
