@@ -151,9 +151,9 @@ function renderTitle(): void {
         <p class="title-repo">acme / admin-console</p>
         <h1 class="game-title">プルリクエスト <span class="game-title-number">#8</span></h1>
         <p class="tagline">AI が書いたプルリクエストを、説明文だけでレビューしてください。</p>
-        ${renderRules()}
         <h2 class="level-heading">難易度を選んでレビューを始める</h2>
         <div class="levels">${levels.map(renderLevelButton).join("")}</div>
+        ${renderRules()}
         ${levels.filter(isPlayable).map(renderCollection).join("")}
         <p class="title-footer">${reportLink("title-report", "不具合の報告は GitHub へ")}</p>
       </div>

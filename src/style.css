@@ -176,7 +176,7 @@ code {
 }
 
 .rules {
-  margin: 0 0 32px;
+  margin: 32px 0 0;
   text-align: left;
   border: 1px solid #30363d;
   border-radius: 8px;
@@ -296,7 +296,8 @@ code {
   background: rgba(255, 255, 255, 0.03);
 }
 
-.collection + .collection {
+.collection + .collection,
+.rules + .collection {
   margin-top: 12px;
 }
 
