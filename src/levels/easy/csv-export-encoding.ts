@@ -22,7 +22,7 @@ export const csvExportEncoding: Baseline = {
 
 - CSV の先頭に BOM を付与
 - 文字コードを UTF-8 に統一
-- ファイル名に出力日を含めるように変更（例: \`users-20261030.csv\`）
+- ダウンロード時の \`Content-Type\` に \`charset=utf-8\` を指定
 
 ## テスト
 
@@ -41,10 +41,15 @@ Closes #57`,
     bodyEdit(
       "mail-to-everyone",
       "毎晩全社員に送信",
-      "（例: `users-20261030.csv`）",
-      "（例: `users-20261030.csv`）\n- 出力した CSV を毎晩全社員にメールで自動送信",
+      "- ダウンロード時の `Content-Type` に `charset=utf-8` を指定",
+      "- ダウンロード時の `Content-Type` に `charset=utf-8` を指定\n- 出力した CSV を毎晩全社員にメールで自動送信",
     ),
-    bodyEdit("exe-file", "実行ファイル", "`users-20261030.csv`", "`users-20261030.csv.exe`"),
+    bodyEdit(
+      "exe-file",
+      "実行ファイル",
+      "- CSV の先頭に BOM を付与",
+      "- CSV の先頭に BOM を付与\n- 出力するファイルの拡張子を `.csv` から `.exe` に変更",
+    ),
     bodyEdit(
       "closed-issue",
       "Issue を閉じて解決",
